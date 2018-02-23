@@ -7,21 +7,19 @@ coefficients are algebraic complex numbers.
 ## Brief description
 
 The main function provided by Ccluster.jl is **ccluster**.
-It takes as input:
-* a polynomial *P*
-* a square complex box *B*
-* a bound *eps*
-* a strategy
-* a verbosity flag
+It takes as input
+a polynomial *P*, 
+a square complex box *B*, 
+a bound *eps*, 
+a strategy and
+a verbosity flag.
 
 It outputs a set of *natural clusters* of roots together with the sum of multiplicities
 of the roots in each cluster.
-
 A cluster is a complex disc *D* containing at least one root, 
 and it is natural when *3D* contains the same roots
 than *D*.
-
-Each root of *P* in *B* is in exactly one cluster, and clusters may contain
+Each root of *P* in *B* is in exactly one cluster of the output, and clusters may contain
 roots of *P* in *2B*
 
 ## Installation
@@ -53,10 +51,10 @@ end
 ```
 
 ### Defining an initial box  
-The initial box is an array of three Nemo.fmpq defining respectively:
-* the real part of the center
-* the imaginary part of the center
-* the width of the box
+The initial box is an array of three Nemo.fmpq defining respectively
+the real part of the center,
+the imaginary part of the center and
+the width of the box.
 
 The following code:
 ```
@@ -71,7 +69,7 @@ The strategy is an integer that can take its value in:
   natural clusters with radius at most *eps* 
   or natural clusters with exactly one root of multiplicity 1. 
 
-The bound is a rational number:
+The *eps* is a rational number:
 ```
 eps = fmpq(1,100)
 ```
@@ -80,13 +78,13 @@ or
 eps = fmpq(1, fmpz(2)^(-53))
 ```
 
-Unless you know what you are doing, setting *eps* to zero is a very bad idea.
+Unless you know what you are doing, setting *eps* to 0 is a very bad idea.
 
 ### The verbosity flag
 Use 0 unless you want statistics on the solving process.
 
 ### Example
-Here is a minimal example of use of **ccluster** for computing the 
+Below is a minimal example of use of **ccluster** for computing the 
 roots of Bernoulli polynomials.
 
 ```
