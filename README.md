@@ -22,6 +22,9 @@ than *D*.
 Each root of *P* in *B* is in exactly one cluster of the output, and clusters may contain
 roots of *P* in *2B*
 
+The implemented algorithm is described here:
+https://dl.acm.org/citation.cfm?id=2930939
+
 ## Installation
 It depends on Nemo, PyCall and PyPlot.
 You can install it within Julia with:
