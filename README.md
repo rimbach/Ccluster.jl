@@ -46,7 +46,7 @@ Here is an example for a polynomial with rational coefficients:
 using Nemo
 R, x = PolynomialRing(Nemo.QQ, "x")
 
-function getAppBern( dest::Ptr{acb_poly}, p::Int )
+function getApproximation( dest::Ptr{acb_poly}, p::Int )
     P = R(fmpq(1,3)*x^3 + fmpq(1,2)*x^2 + fmpq(1,1)*x + 1)
     ccall((:acb_poly_set_fmpq_poly, :libarb), Void,
                 (Ptr{acb_poly}, Ptr{fmpq_poly}, Int), dest, &P, prec)
