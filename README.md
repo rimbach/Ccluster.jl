@@ -1,3 +1,5 @@
+#Ccluster.jl
+
 Ccluster.jl is a julia wrapper for Ccluster (https://github.com/rimbach/Ccluster.git)
 
 You can install it with:
@@ -6,6 +8,7 @@ julia> Pkg.clone("https://github.com/rimbach/Ccluster.jl.git")
 
 Here is a minimal exemple:
 
+```
 using Nemo
 using Ccluster
 
@@ -29,4 +32,4 @@ eps = fmpq(1,100)
     
 Res = ccluster(getAppBern, bInit, eps, 15, 0);
 plotCcluster(Res, bInit, false)
- 
+``` 
