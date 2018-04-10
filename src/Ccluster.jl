@@ -39,6 +39,7 @@ end
 # using PyPlot
 
 include("box.jl")
+include("listBox.jl")
 include("connComp.jl")
 include("listConnComp.jl")
 include("plotCcluster.jl")
@@ -81,6 +82,29 @@ function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, ver
         tempCC = pop(lccRes)
         tempBO = getComponentBox(tempCC,initBox)
         push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    return queueResults
+    
+end
+
+function ccluster_draw( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
+    
+    initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
+    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+    
+    lccRes = listConnComp()
+    lcbDis = listBox()
+    
+    ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
+             Void, (Ptr{listConnComp}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
+                    &lccRes,           getApp_c,   &initBox, &eps,      strat, verbose )
+     
+    queueResults = []
+    while !isEmpty(lccRes)
+        tempCC = pop(lccRes)
+        tempBO = getComponentBox(tempCC,initBox)
+        push!(queueResults, [getNbSols(tempCC),[getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]])
     end
     
     return queueResults
