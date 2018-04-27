@@ -1,6 +1,6 @@
 VERSION >= v"0.4.0-dev+6521" && __precompile__()
 
-module Ccluster
+# module Ccluster
 
 import Nemo: fmpq, acb_poly
 
@@ -44,6 +44,7 @@ include("connComp.jl")
 include("listConnComp.jl")
 include("plotCcluster.jl")
 
+__init__()
    
 function ccluster( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
     
@@ -88,6 +89,38 @@ function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, ver
     
 end
 
+function ccluster_DAC_first(qRes::listConnComp, 
+                            qMainLoop::listConnComp, 
+                            discardedCcs::listConnComp,
+                            getApprox::Function, 
+                            initBox::box, eps::fmpq, strat::Int, verbose::Int = 0 )
+    
+    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+    
+    ccall( (:ccluster_DAC_first_interface_forJulia, :libccluster), 
+             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
+                    Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
+                    &qRes,             &qMainLoop,        &discardedCcs,
+                    getApp_c,  &initBox, &eps,      strat, verbose )
+    
+end
+
+function ccluster_DAC_next(qRes::listConnComp, 
+                            qMainLoop::listConnComp, 
+                            discardedCcs::listConnComp,
+                            getApprox::Function, 
+                            initBox::box, eps::fmpq, strat::Int, verbose::Int = 0 )
+    
+    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+    
+    ccall( (:ccluster_DAC_next_interface_forJulia, :libccluster), 
+             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
+                    Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
+                    &qRes,             &qMainLoop,        &discardedCcs,
+                    getApp_c,  &initBox, &eps,      strat, verbose )
+    
+end
+
 function ccluster_draw( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
     
     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
@@ -97,17 +130,26 @@ function ccluster_draw( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmp
     lcbDis = listBox()
     
     ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &lccRes,           getApp_c,   &initBox, &eps,      strat, verbose )
+             Void, (Ptr{listConnComp},Ptr{listBox}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
+                    &lccRes, &lcbDis,          getApp_c,   &initBox, &eps,      strat, verbose )
      
     queueResults = []
     while !isEmpty(lccRes)
         tempCC = pop(lccRes)
-        tempBO = getComponentBox(tempCC,initBox)
-        push!(queueResults, [getNbSols(tempCC),[getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]])
+#         tempBO = getComponentBox(tempCC,initBox)
+#         push!(queueResults, [getNbSols(tempCC),[getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]])
+        push!(queueResults, tempCC)
     end
     
-    return queueResults
+    queueDiscarded = []
+    while !isEmpty(lcbDis)
+        tempB = pop(lcbDis)
+        push!(queueDiscarded, tempB)
+#         push!(queueDiscarded, [getCenterRe(tempB), getCenterIm(tempB), getWidth(tempB)])
+#         push!(queueDiscarded, [getCenterIm(tempB)])
+    end
+    
+    return queueResults, queueDiscarded
     
 end
 
@@ -144,4 +186,4 @@ export ccluster, plotCcluster
 #     
 # end  
 
-end # module
+# end # module
