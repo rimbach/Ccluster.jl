@@ -1,6 +1,6 @@
 VERSION >= v"0.4.0-dev+6521" && __precompile__()
 
-# module Ccluster
+module Ccluster
 
 import Nemo: fmpq, acb_poly
 
@@ -102,6 +102,8 @@ function ccluster_DAC_first(qRes::listConnComp,
                     Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
                     &qRes,             &qMainLoop,        &discardedCcs,
                     getApp_c,  &initBox, &eps,      strat, verbose )
+                    
+    return
     
 end
 
@@ -118,6 +120,8 @@ function ccluster_DAC_next(qRes::listConnComp,
                     Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
                     &qRes,             &qMainLoop,        &discardedCcs,
                     getApp_c,  &initBox, &eps,      strat, verbose )
+    
+    return 
     
 end
 
@@ -186,4 +190,4 @@ export ccluster, plotCcluster
 #     
 # end  
 
-# end # module
+end # module
