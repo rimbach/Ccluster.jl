@@ -20,7 +20,7 @@ type listBox
         ccall( (:compBox_list_init, :libccluster), 
              Void, (Ptr{listBox},), 
                     &z)
-        finalizer(z, _listConnComp_clear_fn)
+#         finalizer(z, _listBox_clear_fn)
         return z
     end
 end

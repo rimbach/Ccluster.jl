@@ -93,15 +93,16 @@ function ccluster_DAC_first(qRes::listConnComp,
                             qMainLoop::listConnComp, 
                             discardedCcs::listConnComp,
                             getApprox::Function, 
+                            nbSols::Int,
                             initBox::box, eps::fmpq, strat::Int, verbose::Int = 0 )
     
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
     
     ccall( (:ccluster_DAC_first_interface_forJulia, :libccluster), 
              Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
-                    Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
+                    Ptr{Void},Int, Ptr{box}, Ptr{fmpq}, Int,   Int), 
                     &qRes,             &qMainLoop,        &discardedCcs,
-                    getApp_c,  &initBox, &eps,      strat, verbose )
+                    getApp_c,  nbSols, &initBox, &eps,      strat, verbose )
                     
     return
     
@@ -110,16 +111,17 @@ end
 function ccluster_DAC_next(qRes::listConnComp, 
                             qMainLoop::listConnComp, 
                             discardedCcs::listConnComp,
-                            getApprox::Function, 
+                            getApprox::Function,
+                            nbSols::Int,
                             initBox::box, eps::fmpq, strat::Int, verbose::Int = 0 )
     
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
     
     ccall( (:ccluster_DAC_next_interface_forJulia, :libccluster), 
              Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
-                    Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
+                    Ptr{Void}, Int, Ptr{box}, Ptr{fmpq}, Int,   Int), 
                     &qRes,             &qMainLoop,        &discardedCcs,
-                    getApp_c,  &initBox, &eps,      strat, verbose )
+                    getApp_c,  nbSols, &initBox, &eps,      strat, verbose )
     
     return 
     

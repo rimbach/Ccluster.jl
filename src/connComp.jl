@@ -17,7 +17,7 @@ type connComp
     _boxes_end::Ptr{Void}
     _boxes_size::Cint
     _boxes_clear::Ptr{Void}
-#     _list_of_boxes::Int
+#     _list_of_boxes::listBox
 #   width: fmpq 
     _width_den::Int
     _width_num::Int
@@ -79,4 +79,19 @@ function getComponentBox(cc::connComp, initialBox::box)
                     &res,      &cc,           &initialBox);
     return res
     
+end
+
+function pop( cc::connComp )
+    res = ccall( (:connCmp_pop, :libccluster), 
+                  Ptr{box}, (Ptr{connComp},), 
+                                 &cc)                        
+    resobj::box = unsafe_load(res)
+    return resobj
+end
+
+function isEmpty(cc::connComp)
+    res = ccall( (:connCmp_is_empty, :libccluster), 
+                  Cint, (Ptr{connComp},), 
+                        &cc )
+    return Bool(res)
 end
