@@ -46,6 +46,14 @@ function pop( lc::listConnComp )
     return resobj
 end
 
+function pop_obj_and_ptr( lc::listConnComp )
+    res = ccall( (:connCmp_list_pop, :libccluster), 
+                  Ptr{connComp}, (Ptr{listConnComp},), 
+                                 &lc)                        
+    resobj::connComp = unsafe_load(res)
+    return resobj, res
+end
+
 
 function push( lc::listConnComp, cc::connComp )
     ccall( (:connCmp_list_push, :libccluster), 
