@@ -61,4 +61,10 @@ function push( lc::listConnComp, cc::connComp )
                     &lc,               &cc)
 end
 
+function push_ptr( lc::listConnComp, cc::Ptr{connComp} )
+    ccall( (:connCmp_list_push, :libccluster), 
+             Void, (Ptr{listConnComp}, Ptr{connComp}), 
+                    &lc,               cc)
+end
+
 
