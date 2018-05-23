@@ -89,15 +89,21 @@ function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, ver
     
 end
 
-function ccluster_refine(qRes::listConnComp, getApprox::Function, CC::connComp, eps::fmpq, strat::Int, verbose::Int = 0 )
+function ccluster_refine(qRes::listConnComp, 
+                         getApprox::Function, 
+                         CC::connComp, 
+                         initBox::box,
+                         eps::fmpq, 
+                         strat::Int, 
+                         verbose::Int = 0 )
     
 #     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
     
 #     lccRes = listConnComp()
     ccall( (:ccluster_refine_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{Void},    Ptr{connComp}, Ptr{fmpq}, Int,   Int), 
-                    &qRes,           getApp_c,   &CC, &eps,      strat, verbose )
+             Void, (Ptr{listConnComp}, Ptr{connComp}, Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
+                    &qRes,             &CC,           getApp_c,  &initBox, &eps,      strat, verbose )
      
 #     queueResults = []
 #     while !isEmpty(lccRes)
