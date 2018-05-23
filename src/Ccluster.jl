@@ -91,7 +91,7 @@ end
 
 function ccluster_refine(qRes::listConnComp, 
                          getApprox::Function, 
-                         CC::connComp, 
+                         CC::listConnComp, 
                          initBox::box,
                          eps::fmpq, 
                          strat::Int, 
@@ -102,8 +102,8 @@ function ccluster_refine(qRes::listConnComp,
     
 #     lccRes = listConnComp()
     ccall( (:ccluster_refine_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{connComp}, Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &qRes,             &CC,           getApp_c,  &initBox, &eps,      strat, verbose )
+             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
+                    &qRes,             &CC,               getApp_c,  &initBox, &eps,      strat, verbose )
      
 #     queueResults = []
 #     while !isEmpty(lccRes)
