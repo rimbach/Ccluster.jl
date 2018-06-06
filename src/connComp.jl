@@ -39,6 +39,8 @@ type connComp
     _nwSpd::Int
 #   appPr: int
     _appPr::Int
+#   newSu: int
+    _newSu::Cint
     
     function connComp()
         z = new()
