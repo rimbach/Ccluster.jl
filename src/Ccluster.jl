@@ -46,6 +46,8 @@ include("plotCcluster.jl")
 
 __init__()
    
+PGLOBALCCLUSTERFMPQ = fmpq(0,1)
+
 function ccluster( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
     
     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
