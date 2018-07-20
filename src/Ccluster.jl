@@ -2,7 +2,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__()
 
 module Ccluster
 
-import Nemo: fmpq, acb_poly
+import Nemo: fmpq, acb_poly, fmpq_poly, QQ
 
 using PyCall
 using PyPlot
@@ -44,35 +44,53 @@ include("connComp.jl")
 include("listConnComp.jl")
 include("plotCcluster.jl")
 
+# global PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
+
 __init__()
    
-PGLOBALCCLUSTERFMPQ = fmpq(0,1)
+PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
 
-function ccluster( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
+function getApp_FMPQ( dest::Ptr{acb_poly}, prec::Int )
+    ccall((:acb_poly_set_fmpq_poly, :libarb), Void,
+                (Ptr{acb_poly}, Ptr{fmpq_poly}, Int), dest, &PGLOBALCCLUSTERFMPQ, prec)
+end
+
+function ccluster( P_FMPQ::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, verbose::Int)
     
-    initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
-    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
-    
-    lccRes = listConnComp()
-    
-    ccall( (:ccluster_interface_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &lccRes,           getApp_c,   &initBox, &eps,      strat, verbose )
-     
-    queueResults = []
-    while !isEmpty(lccRes)
-        tempCC = pop(lccRes)
-        tempBO = getComponentBox(tempCC,initBox)
-        push!(queueResults, [getNbSols(tempCC),[getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]])
-    end
-    
-    return queueResults
+    return ccluster( getApp_FMPQ, initialBox, eps, 23, verbose)
     
 end
 
-function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, verbose::Int = 0 )
+function ccluster( P_FMPQ::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int)
     
-#     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
+    ccall((:fmpq_poly_set, :libflint), Void,
+                (Ptr{fmpq_poly}, Ptr{fmpq_poly}), &PGLOBALCCLUSTERFMPQ, &P_FMPQ)
+
+    return ccluster( getApp_FMPQ, initialBox, eps, strat, verbose)
+    
+end
+
+function ccluster( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, verbose::Int)
+    
+    return ccluster( getApprox, initialBox, eps, 23, verbose)
+end
+
+function ccluster( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int)
+    
+    initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
+
+    queueResults = ccluster( getApprox, initBox, eps, strat, verbose )
+    
+    for sol in queueResults
+        tempBO = sol[2]
+        sol[2] = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
+    end
+    
+    return queueResults
+end
+
+function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, verbose::Int)
+    
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
     
     lccRes = listConnComp()
