@@ -57,7 +57,7 @@ end
 
 function ccluster( P_FMPQ::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, verbose::Int)
     
-    return ccluster( getApp_FMPQ, initialBox, eps, 23, verbose)
+    return ccluster( P_FMPQ, initialBox, eps, 23, verbose)
     
 end
 
