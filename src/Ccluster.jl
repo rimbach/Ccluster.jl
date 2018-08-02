@@ -2,7 +2,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__()
 
 module Ccluster
 
-import Nemo: fmpq, acb_poly, fmpq_poly, QQ
+import Nemo: fmpq, acb_poly, fmpq_poly, QQ, prec, parent
 
 using PyCall
 using PyPlot
@@ -48,6 +48,12 @@ include("plotCcluster.jl")
 
 __init__()
    
+function ptr_set_acb_poly( dest::Ptr{acb_poly}, src::acb_poly )
+    ccall((:acb_poly_set, :libarb), Void,
+                (Ptr{acb_poly}, Ptr{acb_poly}, Int), 
+                 dest,         &src,          prec(parent(src)))
+end
+
 PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
 
 function getApp_FMPQ( dest::Ptr{acb_poly}, prec::Int )
