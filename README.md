@@ -31,6 +31,7 @@ You can install it within Julia with:
 
 ```
 Pkg.clone("https://github.com/rimbach/Ccluster.jl.git")
+Pkg.build("Ccluster")
 ```
 
 ## Usage
