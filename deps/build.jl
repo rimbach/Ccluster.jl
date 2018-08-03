@@ -29,7 +29,7 @@ end
 LDFLAGS = "-Wl,-rpath,$vdir/lib -Wl,-rpath,\$\$ORIGIN/../share/julia/site/v$(VERSION.major).$(VERSION.minor)/Nemo/local/lib"
 DLCFLAGS = "-fPIC -fno-common"
 
-# INSTALL CCLUSTER 
+# INSTALL CCLUSTER #temp
 
 cd(wdir)
 
