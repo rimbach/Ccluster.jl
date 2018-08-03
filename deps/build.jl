@@ -26,6 +26,9 @@ else
     mkdir(joinpath(vdir, "lib"))
 end
 
+LDFLAGS = "-Wl,-rpath,$vdir/lib -Wl,-rpath,\$\$ORIGIN/../share/julia/site/v$(VERSION.major).$(VERSION.minor)/Nemo/local/lib"
+DLCFLAGS = "-fPIC -fno-common"
+
 # INSTALL CCLUSTER 
 
 cd(wdir)
@@ -37,6 +40,30 @@ function download_dll(url_string, location_string)
       download(url_string, location_string)
    end
 end
+
+cd(wdir)
+
+if !is_windows()
+  println("Cloning Ccluster ... ")
+  try
+    run(`git clone https://github.com/rimbach/Ccluster.git`)
+    cd(joinpath("$wdir", "Ccluster"))
+    run(`git checkout $CCLUSTER_VERSION`)
+    cd(wdir)
+  catch
+    if ispath(joinpath("$wdir", "Ccluster"))
+      #open(`patch -R --forward -d arb -r -`, "r", open("../deps-PIE-ftbfs.patch"))
+      cd(joinpath("$wdir", "Ccluster"))
+      run(`git fetch`)
+      run(`git checkout $CCLUSTER_VERSION`)
+      cd(wdir)
+    end
+  end
+# #   open(`patch --forward -d arb -r -`, "r", open("../deps-PIE-ftbfs.patch"))
+  println("DONE")
+end
+
+cd(wdir)
 
 if is_windows()
     if Int == Int32
@@ -50,31 +77,16 @@ if is_windows()
         download_dll("https://cims.nyu.edu/~imbach/libs/libccluster.dll", joinpath(vdir, "lib", "libccluster.dll"))
     end
     println("DONE")
+else
+    println("Building Ccluster ... ")
+    cd(joinpath("$wdir", "Ccluster"))
+    withenv("LD_LIBRARY_PATH"=>"$vdir/lib", "LDFLAGS"=>LDFLAGS) do
+      run(`./configure --prefix=$vdir --disable-static --enable-shared --with-flint=$NemoLibsDir --with-arb=$NemoLibsDir`)
+      run(`make -j4`)
+      run(`make install`)
+    end
+    println("DONE")
 end
-
-cd(wdir)
-
-if !is_windows()
-#   println("Cloning Ccluster ... ")
-#   try
-#     run(`git clone https://github.com/rimbach/Ccluster.git`)
-#     cd(joinpath("$wdir", "Ccluster"))
-#     run(`git checkout CCLUSTER_VERSION`)
-#     cd(wdir)
-#   catch
-# #     if ispath(joinpath("$wdir", "Ccluster"))
-# #       open(`patch -R --forward -d arb -r -`, "r", open("../deps-PIE-ftbfs.patch"))
-# #       cd(joinpath("$wdir", "arb"))
-# #       run(`git fetch`)
-# #       run(`git checkout $ARB_VERSION`)
-# #       cd(wdir)
-# #     end
-#   end
-# #   open(`patch --forward -d arb -r -`, "r", open("../deps-PIE-ftbfs.patch"))
-#   println("DONE")
-end
-
-cd(wdir)
 
 push!(Libdl.DL_LOAD_PATH, joinpath(vdir, "lib"))
 
