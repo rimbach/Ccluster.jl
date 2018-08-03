@@ -21,15 +21,17 @@ const libccluster = joinpath(pkgdir, "local", "lib", "libccluster")
 const matplotlib_patches = PyNULL()
 
 function __init__()
-    push!(Libdl.DL_LOAD_PATH, libdir)
-    if is_linux() 
-            Libdl.dlopen(libccluster)
-    end
+
+    if "HOSTNAME" in keys(ENV) && ENV["HOSTNAME"] == "juliabox"
+       push!(Libdl.DL_LOAD_PATH, "/usr/local/lib")
+    elseif is_linux()
+        push!(Libdl.DL_LOAD_PATH, libdir)
+    else
+        push!(Libdl.DL_LOAD_PATH, libdir)
+   end
     println("")
     println("Welcome to Ccluster version 0.0.1")
     println("")
-#     println("Nemo comes with absolutely no warranty whatsoever")
-#     println("")
 
     copy!(matplotlib_patches, pyimport_conda("matplotlib.patches", "matplotlib"))
 end
