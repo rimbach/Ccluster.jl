@@ -4,8 +4,8 @@ module Ccluster
 
 import Nemo: fmpq, acb_poly, fmpq_poly, QQ, prec, parent
 
-using PyCall
-using PyPlot
+# using PyCall
+# using PyPlot
 
 ###############################################################################
 #
@@ -18,7 +18,7 @@ const libdir = joinpath(pkgdir, "local", "lib")
 
 const libccluster = joinpath(pkgdir, "local", "lib", "libccluster")
 
-const matplotlib_patches = PyNULL()
+# const matplotlib_patches = PyNULL()
 
 function __init__()
 
@@ -33,7 +33,7 @@ function __init__()
     println("Welcome to Ccluster version 0.0.1")
     println("")
 
-    copy!(matplotlib_patches, pyimport_conda("matplotlib.patches", "matplotlib"))
+#     copy!(matplotlib_patches, pyimport_conda("matplotlib.patches", "matplotlib"))
 end
 
 # using Nemo
@@ -44,7 +44,7 @@ include("box.jl")
 include("listBox.jl")
 include("connComp.jl")
 include("listConnComp.jl")
-include("plotCcluster.jl")
+# include("plotCcluster.jl")
 
 # global PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
 
@@ -182,39 +182,40 @@ function ccluster_DAC_next(qRes::listConnComp,
     
 end
 
-function ccluster_draw( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
-    
-    initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
-    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
-    
-    lccRes = listConnComp()
-    lcbDis = listBox()
-    
-    ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
-             Void, (Ptr{listConnComp},Ptr{listBox}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &lccRes, &lcbDis,          getApp_c,   &initBox, &eps,      strat, verbose )
-     
-    queueResults = []
-    while !isEmpty(lccRes)
-        tempCC = pop(lccRes)
-#         tempBO = getComponentBox(tempCC,initBox)
-#         push!(queueResults, [getNbSols(tempCC),[getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]])
-        push!(queueResults, tempCC)
-    end
-    
-    queueDiscarded = []
-    while !isEmpty(lcbDis)
-        tempB = pop(lcbDis)
-        push!(queueDiscarded, tempB)
-#         push!(queueDiscarded, [getCenterRe(tempB), getCenterIm(tempB), getWidth(tempB)])
-#         push!(queueDiscarded, [getCenterIm(tempB)])
-    end
-    
-    return queueResults, queueDiscarded
-    
-end
+# function ccluster_draw( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
+#     
+#     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
+#     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+#     
+#     lccRes = listConnComp()
+#     lcbDis = listBox()
+#     
+#     ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
+#              Void, (Ptr{listConnComp},Ptr{listBox}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
+#                     &lccRes, &lcbDis,          getApp_c,   &initBox, &eps,      strat, verbose )
+#      
+#     queueResults = []
+#     while !isEmpty(lccRes)
+#         tempCC = pop(lccRes)
+# #         tempBO = getComponentBox(tempCC,initBox)
+# #         push!(queueResults, [getNbSols(tempCC),[getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]])
+#         push!(queueResults, tempCC)
+#     end
+#     
+#     queueDiscarded = []
+#     while !isEmpty(lcbDis)
+#         tempB = pop(lcbDis)
+#         push!(queueDiscarded, tempB)
+# #         push!(queueDiscarded, [getCenterRe(tempB), getCenterIm(tempB), getWidth(tempB)])
+# #         push!(queueDiscarded, [getCenterIm(tempB)])
+#     end
+#     
+#     return queueResults, queueDiscarded
+#     
+# end
 
-export ccluster, plotCcluster
+export ccluster
+# export ccluster, plotCcluster
 
 # POLY_GLOBAL = fmpq_poly()
 # 
