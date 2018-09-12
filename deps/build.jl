@@ -70,11 +70,21 @@ if is_windows()
         println("No binaries for 32 bits windows yet ... ")
     else
         println("downloading binaries ... ")
-        download_dll("https://cims.nyu.edu/~imbach/libs/libgmp-10.dll", joinpath(vdir, "lib", "libgmp-10.dll"))
-        download_dll("https://cims.nyu.edu/~imbach/libs/libmpfr-6.dll", joinpath(vdir, "lib", "libmpfr-6.dll"))
-        download_dll("https://cims.nyu.edu/~imbach/libs/libflint-13.dll", joinpath(vdir, "lib", "libflint-13.dll"))
-        download_dll("https://cims.nyu.edu/~imbach/libs/libarb-2.dll", joinpath(vdir, "lib", "libarb-2.dll"))
+#         download_dll("https://cims.nyu.edu/~imbach/libs/libgmp-10.dll", joinpath(vdir, "lib", "libgmp-10.dll"))
+#         download_dll("https://cims.nyu.edu/~imbach/libs/libmpfr-6.dll", joinpath(vdir, "lib", "libmpfr-6.dll"))
+#         download_dll("https://cims.nyu.edu/~imbach/libs/libflint-13.dll", joinpath(vdir, "lib", "libflint-13.dll"))
+#         download_dll("https://cims.nyu.edu/~imbach/libs/libarb-2.dll", joinpath(vdir, "lib", "libarb-2.dll"))
         download_dll("https://cims.nyu.edu/~imbach/libs/libccluster.dll", joinpath(vdir, "lib", "libccluster.dll"))
+        try
+            run(`ln -sf $NemoLibsDir\\lib\\libflint-13.dll $vdir\\lib\\libflint-13.dll`)
+        catch
+            cp(joinpath(NemoLibsDir, "lib", "libflint-13.dll"), joinpath(vdir, "lib", "libflint-13.dll"), remove_destination=true)
+        end
+        try
+            run(`ln -sf $NemoLibsDir\\lib\\libarb.dll $vdir\\lib\\libarb-2.dll`)
+        catch
+            cp(joinpath(NemoLibsDir, "lib", "libarb.dll"), joinpath(vdir, "lib", "libarb-2.dll"), remove_destination=true)
+        end
     end
     println("DONE")
 else
