@@ -4,9 +4,6 @@ module Ccluster
 
 import Nemo: fmpq, acb_poly, fmpq_poly, QQ, prec, parent
 
-# using PyCall
-# using PyPlot
-
 ###############################################################################
 #
 #   Set up environment / load libraries
@@ -17,8 +14,6 @@ const pkgdir = realpath(joinpath(dirname(@__FILE__), ".."))
 const libdir = joinpath(pkgdir, "local", "lib")
 
 const libccluster = joinpath(pkgdir, "local", "lib", "libccluster")
-
-# const matplotlib_patches = PyNULL()
 
 function __init__()
 
@@ -32,21 +27,12 @@ function __init__()
     println("")
     println("Welcome to Ccluster version 0.0.1")
     println("")
-
-#     copy!(matplotlib_patches, pyimport_conda("matplotlib.patches", "matplotlib"))
 end
-
-# using Nemo
-# using PyCall
-# using PyPlot
 
 include("box.jl")
 include("listBox.jl")
 include("connComp.jl")
 include("listConnComp.jl")
-# include("plotCcluster.jl")
-
-# global PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
 
 __init__()
    
@@ -125,22 +111,11 @@ function ccluster_refine(qRes::listConnComp,
                          strat::Int, 
                          verbose::Int = 0 )
     
-#     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
-    
-#     lccRes = listConnComp()
+
     ccall( (:ccluster_refine_forJulia, :libccluster), 
              Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
                     &qRes,             &CC,               getApp_c,  &initBox, &eps,      strat, verbose )
-     
-#     queueResults = []
-#     while !isEmpty(lccRes)
-#         tempCC = pop(lccRes)
-#         tempBO = getComponentBox(tempCC,initBox)
-#         push!(queueResults, [getNbSols(tempCC),tempBO])
-#     end
-#     
-#     return queueResults
     
 end
 
@@ -215,7 +190,6 @@ end
 # end
 
 export ccluster
-# export ccluster, plotCcluster
 
 # POLY_GLOBAL = fmpq_poly()
 # 
