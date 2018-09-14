@@ -50,7 +50,7 @@ It is heavy both to install and to load.
 ## Usage
 
 ### Simple example: clustering the roots of a Mignotte-like polynomial
-see the file examples/mignotte.jl
+See the file examples/mignotte.jl
 ```
 using Nemo
 
@@ -85,6 +85,72 @@ using CclusterPlot
 plotCcluster(Res, bInit, false)
 ```
 when replacing false with true, the graphical output is focus on the clusters.
+
+### Other example: clustering the roots of a Mpolynomial whose coefficients are roots of polynomials
+See the file examples/mignotte.jl
+#### Find the 16 roots of the Bernoulli polynomial of degree 64
+```
+using Nemo
+
+R, x = PolynomialRing(Nemo.QQ, "x")
+
+n = 64 #degree
+P = zero(R)
+bernoulli_cache(n)
+for k = 0:n
+    coefficient = (binom(n,k))*(bernoulli(n-k))
+    P = P + coefficient*x^k
+end #P is now the Bernoulli polynomial of degree 8
+
+using Ccluster
+
+bInit = [fmpq(0,1),fmpq(0,1),fmpq(100,1)] #box centered in 0 + sqrt(-1)*0 with width 4
+eps = fmpq(1, fmpz(2)^10)               #eps = 2^-10
+verbosity = 0                           #nothing printed
+Coeffs = ccluster(P, bInit, eps, verbosity)
+```
+#### Define an approximation function for the polynomial whose coefficients are the found roots
+```
+function getApproximation( dest::Ptr{acb_poly}, prec::Int )
+    eps = fmpq(1, fmpz(2)^prec)
+    Qre = zero(R)
+    Qim = zero(R)
+    for i=1:n
+        btemp = [ Coeffs[i][2][1], Coeffs[i][2][2], 2*Coeffs[i][2][3] ]
+        temp = ccluster(P, btemp, eps, 0)
+        Qre = Qre + temp[1][2][1]*x^(i-1)
+        Qim = Qim + temp[1][2][2]*x^(i-1)
+    end
+    Ccluster.ptr_set_2fmpq_poly( dest, Qre, Qim, prec )
+end
+```
+#### Cluster the roots
+```
+bInit = [fmpq(0,1),fmpq(0,1),fmpq(100,1)] #box centered in 0 + sqrt(-1)*0 with width 100
+eps = fmpq(1, 100)                      #eps = 1/100
+verbosity = 0                           #nothing printed
+Roots = ccluster(getApproximation, bInit, eps, 1)
+```
+Output:
+```
+ -------------------Ccluster: ----------------------------------------
+ -------------------Input:    ----------------------------------------
+|box: cRe: 0                cIm: 0                wid: 100            |
+|eps: 1/100                                                           |
+|strat: newton tstarOpt predPrec anticip                              |
+ -------------------Output:   ----------------------------------------
+|number of clusters:                                 63               |
+|number of solutions:                                63               |
+ -------------------Stats:    ----------------------------------------
+|tree depth:                                         20               |
+|tree size:                                        2096               |
+|total time:                                   3.540887               |
+ ---------------------------------------------------------------------
+63-element Array{Any,1}:
+ Any[1, Nemo.fmpq[-3125//32768, 5125//8192, 375//65536]]    
+ ⋮                                                              
+ Any[1, Nemo.fmpq[211625//262144, -105125//262144, 375//524288]]
+ ```
 
 ### Defining a polynomial
 **ccluster** takes as input a function prototyped as:
