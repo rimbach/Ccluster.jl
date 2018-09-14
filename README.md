@@ -111,7 +111,7 @@ end #P is now the Bernoulli polynomial of degree 8
 
 using Ccluster
 
-bInit = [fmpq(0,1),fmpq(0,1),fmpq(100,1)] #box centered in 0 + sqrt(-1)*0 with width 4
+bInit = [fmpq(0,1),fmpq(0,1),fmpq(100,1)] #box centered in 0 + sqrt(-1)*0 with width 100
 eps = fmpq(1, fmpz(2)^10)               #eps = 2^-10
 verbosity = 0                           #nothing printed
 Coeffs = ccluster(P, bInit, eps, verbosity)
@@ -164,16 +164,22 @@ Output (total time in s on a Intel(R) Core(TM) i7-7600U CPU @ 2.80GHz):
 ```
 function getApproximation( dest::Ptr{Nemo.acb_poly}, p::Int )
 ```
-
-Here is an example for a polynomial with rational coefficients:
+Here is an example for a polynomial with complex coefficients:
 ```
-using Nemo
-R, x = PolynomialRing(Nemo.QQ, "x")
+degr = 64
 
-function getApproximation( dest::Ptr{acb_poly}, p::Int )
-    P = R(fmpq(1,3)*x^3 + fmpq(1,2)*x^2 + fmpq(1,1)*x + 1)
-    ccall((:acb_poly_set_fmpq_poly, :libarb), Void,
-                (Ptr{acb_poly}, Ptr{fmpq_poly}, Int), dest, &P, prec)
+function getApproximation( dest::Ptr{acb_poly}, prec::Int )
+    
+    CC = ComplexField(prec)
+    R2, y = PolynomialRing(CC, "y")
+    res = R2(1)
+    for k=1:degr
+        modu = fmpq(k,degr)
+        argu = fmpq(4*k,degr)
+        root = modu*Nemo.exppii(CC(argu))
+        res = res * (y-root)
+    end
+    Ccluster.ptr_set_acb_poly(dest, res)
 end
 ```
 
