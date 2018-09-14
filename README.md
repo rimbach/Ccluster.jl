@@ -65,6 +65,13 @@ Res in an array of couples (sum of multiplicity, disc):
  Any[1, Nemo.fmpq[6935//8192, -8955//8192, 15//16384]]
  Any[1, Nemo.fmpq[6935//8192, 8955//8192, 15//16384]]
 ```
+If you have installed CclusterPlot.jl, you can plot the clusters with:
+```
+using CclusterPlot
+
+plotCcluster(Res, bInit, false)
+```
+when replacing false with true, the graphical output is focus on the clusters.
 
 ### Defining a polynomial
 **ccluster** takes as input a function prototyped as:
