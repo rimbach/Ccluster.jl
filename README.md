@@ -164,7 +164,7 @@ Output (total time in s on a Intel(R) Core(TM) i7-7600U CPU @ 2.80GHz):
 ```
 function getApproximation( dest::Ptr{Nemo.acb_poly}, p::Int )
 ```
-Here is an example for a polynomial with complex coefficients:
+Here is an example for a polynomial with complex coefficients (see also the file examples/spiral.jl)
 ```
 degr = 64
 
