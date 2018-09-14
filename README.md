@@ -26,15 +26,18 @@ The implemented algorithm is described here:
 https://dl.acm.org/citation.cfm?id=2930939
 
 ## Installation
-It depends on Nemo, PyCall and PyPlot.
+
 You can install it within Julia with:
 
 ```
 Pkg.clone("https://github.com/rimbach/Ccluster.jl.git")
 Pkg.build("Ccluster")
 ```
+Ccluster depends on Nemo that will be automatically installed.
 
 ## Usage
+
+### Simple example: clustering the roots of a Mignotte-like polynomial
 
 ### Defining a polynomial
 **ccluster** takes as input a function prototyped as:
