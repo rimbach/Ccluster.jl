@@ -38,6 +38,7 @@ Ccluster depends on Nemo that will be automatically installed.
 ## Usage
 
 ### Simple example: clustering the roots of a Mignotte-like polynomial
+see the file examples/mignotte.jl
 ```
 using Nemo
 
