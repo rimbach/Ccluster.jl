@@ -79,7 +79,7 @@ Res in an array of couples (sum of multiplicity, disc):
  Any[1, Nemo.fmpq[6935//8192, 8955//8192, 15//16384]]
 ```
 each element of Res array being an array which
-* second element is a complex disk (defined by the real and
+* second element is a complex disc (defined by the real and
 imaginary parts of its center and its radius)
 * first element is the sum of multiplicities of the roots in the disk.
 
