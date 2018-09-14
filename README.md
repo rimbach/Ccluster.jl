@@ -55,6 +55,16 @@ verbosity = 0                           #nothing printed
 
 Res = ccluster(P, bInit, eps, verbosity)
 ```
+Res in an array of couples (sum of multiplicity, disc):
+```
+63-element Array{Any,1}:
+ Any[1, Nemo.fmpq[975//1024, 1025//1024, 15//2048]]      
+ ⋮                                                      
+ Any[1, Nemo.fmpq[-2995//4096, 4805//4096, 15//8192]] 
+ Any[2, Nemo.fmpq[0, 0, 15//16384]]                     # the cluster with sum of multiplicity 2
+ Any[1, Nemo.fmpq[6935//8192, -8955//8192, 15//16384]]
+ Any[1, Nemo.fmpq[6935//8192, 8955//8192, 15//16384]]
+```
 
 ### Defining a polynomial
 **ccluster** takes as input a function prototyped as:
