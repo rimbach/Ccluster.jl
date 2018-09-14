@@ -35,6 +35,14 @@ Pkg.build("Ccluster")
 ```
 Ccluster depends on Nemo that will be automatically installed.
 
+For graphical outputs, install the package CclusterPlot with
+```
+Pkg.clone("https://github.com/rimbach/CclusterPlot.jl.git")
+```
+CclusterPlot depends on PyCall and PyPlot, and requires that matplotlib is installed
+on your system.
+It is heavy both to install and to load.
+
 ## Usage
 
 ### Simple example: clustering the roots of a Mignotte-like polynomial
