@@ -25,6 +25,10 @@ roots of *P* in *2B*
 The implemented algorithm is described here:
 https://dl.acm.org/citation.cfm?id=2930939
 
+Please cite:
+https://link.springer.com/chapter/10.1007/978-3-319-96418-8_28
+if you use it in your research.
+
 ## Installation
 
 You can install it within Julia with:
