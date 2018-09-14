@@ -42,6 +42,12 @@ function ptr_set_acb_poly( dest::Ptr{acb_poly}, src::acb_poly )
                  dest,         &src,          prec(parent(src)))
 end
 
+function ptr_set_2fmpq_poly( dest::Ptr{acb_poly}, re::fmpq_poly, im::fmpq_poly, prec::Int )
+    ccall((:acb_poly_set2_fmpq_poly, :libarb), Void,
+                (Ptr{acb_poly}, Ptr{fmpq_poly}, Ptr{fmpq_poly}, Int), 
+                 dest,         &re,             &im,        prec)
+end
+
 PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
 
 function getApp_FMPQ( dest::Ptr{acb_poly}, prec::Int )
