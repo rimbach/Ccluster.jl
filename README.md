@@ -94,7 +94,7 @@ The last argument is a flag telling the function wether to focus
 on clusters (when *true*) or not (when *false*).
 
 ### Other example: clustering the roots of a polynomial whose coefficients are roots of polynomials
-See the file examples/mignotte.jl
+See the file examples/coeffsBernoulli.jl
 #### Find the 64 roots of the Bernoulli polynomial of degree 64
 ```
 using Nemo
