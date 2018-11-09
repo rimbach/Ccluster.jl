@@ -130,7 +130,11 @@ function ccluster_DAC_first(qRes::listConnComp,
                             discardedCcs::listConnComp,
                             getApprox::Function, 
                             nbSols::Int,
-                            initBox::box, eps::fmpq, strat::Int, verbose::Int = 0 )
+#                             initBox::box,
+                            initialBox::Array{fmpq,1},
+                            eps::fmpq, strat::Int, verbose::Int = 0 )
+    
+    initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
     
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
     
