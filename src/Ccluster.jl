@@ -109,6 +109,23 @@ function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, ver
     
 end
 
+function ccluster_solve(getApprox::Function, 
+                        initBox::box, 
+                        eps::fmpq, 
+                        strat::Int, 
+                        verbose::Int)
+    
+    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+    
+    lccRes = listConnComp()
+    ccall( (:ccluster_interface_forJulia, :libccluster), 
+             Void, (Ptr{listConnComp}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
+                    &lccRes,           getApp_c,   &initBox, &eps,      strat, verbose )
+    
+    return lccRes
+    
+end
+
 function ccluster_refine(qRes::listConnComp, 
                          getApprox::Function, 
                          CC::listConnComp, 

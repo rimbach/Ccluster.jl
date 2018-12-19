@@ -69,6 +69,13 @@ function _connComp_clear_fn(cc::connComp)
                 &cc)
 end
 
+function copy_Ptr( cc::Ptr{connComp} )
+    res = ccall( (:connCmp_copy, :libccluster), 
+                  Ptr{connComp}, (Ptr{connComp},), 
+                        cc )
+    return res
+end
+
 function getNbSols(cc::connComp)
     return Int(cc._nSols)
 end
