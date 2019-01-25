@@ -143,11 +143,11 @@ function ccluster_refine(qRes::listConnComp,
 end
 
 function ccluster_DAC_first(qRes::listConnComp, 
+                            qAllRes::listConnComp,
                             qMainLoop::listConnComp, 
                             discardedCcs::listConnComp,
                             getApprox::Function, 
                             nbSols::Int,
-#                             initBox::box,
                             initialBox::Array{fmpq,1},
                             eps::fmpq, strat::Int, verbose::Int = 0 )
     
@@ -156,16 +156,17 @@ function ccluster_DAC_first(qRes::listConnComp,
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
     
     ccall( (:ccluster_DAC_first_interface_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
+             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
                     Ptr{Void},Int, Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &qRes,             &qMainLoop,        &discardedCcs,
+                    &qRes,             &qAllRes,          &qMainLoop,        &discardedCcs,
                     getApp_c,  nbSols, &initBox, &eps,      strat, verbose )
                     
     return
     
 end
 
-function ccluster_DAC_next(qRes::listConnComp, 
+function ccluster_DAC_next(qRes::listConnComp,
+                            qAllRes::listConnComp,
                             qMainLoop::listConnComp, 
                             discardedCcs::listConnComp,
                             getApprox::Function,
@@ -175,9 +176,9 @@ function ccluster_DAC_next(qRes::listConnComp,
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
     
     ccall( (:ccluster_DAC_next_interface_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
+             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
                     Ptr{Void}, Int, Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &qRes,             &qMainLoop,        &discardedCcs,
+                    &qRes,             &qAllRes,          &qMainLoop,        &discardedCcs,
                     getApp_c,  nbSols, &initBox, &eps,      strat, verbose )
     
     return 
