@@ -126,6 +126,7 @@ function ccluster_solve(getApprox::Function,
     
 end
 
+
 function ccluster_refine(qRes::listConnComp, 
                          getApprox::Function, 
                          CC::listConnComp, 
@@ -142,16 +143,17 @@ function ccluster_refine(qRes::listConnComp,
     
 end
 
-function ccluster_DAC_first(qRes::listConnComp, 
+function ccluster_DAC_first(qRes::listConnComp,
                             qAllRes::listConnComp,
                             qMainLoop::listConnComp, 
                             discardedCcs::listConnComp,
                             getApprox::Function, 
                             nbSols::Int,
-                            initialBox::Array{fmpq,1},
+#                             initialBox::Array{fmpq,1},
+                            initBox::box,
                             eps::fmpq, strat::Int, verbose::Int = 0 )
     
-    initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
+#     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
     
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
     
