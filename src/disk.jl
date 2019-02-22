@@ -77,6 +77,13 @@ function inflateDisk(d::disk, ratio::fmpq)
                     &res,      &d,        &ratio)
     return res
 end
+
+function isSeparated(d::disk, qMainLoop::listConnComp, qResults::listConnComp, qAllResults::listConnComp, discardedCcs::listConnComp )
+    res = ccall( (:ccluster_compDsk_is_separated_DAC, :libccluster), 
+                   Cint, (Ptr{disk}, Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}), 
+                          &d,        &qMainLoop,       &qResults,           &qAllResults,       &discardedCcs)
+    return Bool(res)
+end
     
 function toStr(d::disk)
     res = ""

@@ -38,6 +38,10 @@ function isEmpty( lc::listConnComp )
     return Bool(res)
 end
 
+function getSize(lc::listConnComp)
+    return Int(lc._size)
+end
+
 function pop( lc::listConnComp )
     res = ccall( (:connCmp_list_pop, :libccluster), 
                   Ptr{connComp}, (Ptr{listConnComp},), 

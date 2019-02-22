@@ -41,6 +41,8 @@ type connComp
     _appPr::Int
 #   newSu: int
     _newSu::Cint
+#   isSep: int
+    _isSep::Cint
     
     function connComp()
         z = new()
@@ -78,6 +80,10 @@ end
 
 function getNbSols(cc::connComp)
     return Int(cc._nSols)
+end
+
+function getNbBoxes(cc::connComp)
+    return Int(cc._boxes_size)
 end
 
 function getComponentBox(cc::connComp, initialBox::box)

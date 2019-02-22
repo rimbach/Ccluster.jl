@@ -33,6 +33,7 @@ include("box.jl")
 include("listBox.jl")
 include("connComp.jl")
 include("listConnComp.jl")
+include("disk.jl")
 
 __init__()
    
@@ -136,11 +137,11 @@ function ccluster_refine(qRes::listConnComp,
                          verbose::Int = 0 )
     
     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
-
+    
     ccall( (:ccluster_refine_forJulia, :libccluster), 
              Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
                     &qRes,             &CC,               getApp_c,  &initBox, &eps,      strat, verbose )
-    
+                    
 end
 
 function ccluster_DAC_first(qRes::listConnComp,
