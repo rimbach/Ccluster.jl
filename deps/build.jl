@@ -91,7 +91,7 @@ else
     println("Building Ccluster ... ")
     cd(joinpath("$wdir", "Ccluster"))
     withenv("LD_LIBRARY_PATH"=>"$vdir/lib", "LDFLAGS"=>LDFLAGS) do
-      run(`./configure --prefix=$vdir --disable-static --enable-shared --with-flint=$NemoLibsDir --with-arb=$NemoLibsDir`)
+      run(`./configure --prefix=$vdir --disable-static --enable-shared --disable-pthread --with-flint=$NemoLibsDir --with-arb=$NemoLibsDir`)
       run(`make -j4`)
       run(`make install`)
     end
