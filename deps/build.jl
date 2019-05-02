@@ -7,7 +7,7 @@ wdir = joinpath(pkgdir, "deps")
 vdir = joinpath(pkgdir, "local")
 NemoLibsDir = joinpath(pkgdir, "..", "Nemo", "local")
 
-if Sys.isapple() && !("CC" in keys(ENV))
+if is_apple() && !("CC" in keys(ENV))
    ENV["CC"] = "clang"
    ENV["CXX"] = "clang++"
 end
@@ -43,7 +43,7 @@ end
 
 cd(wdir)
 
-if !Sys.iswindows()
+if !is_windows()
   println("Cloning Ccluster ... ")
   try
     run(`git clone https://github.com/rimbach/Ccluster.git`)
@@ -65,7 +65,7 @@ end
 
 cd(wdir)
 
-if Sys.iswindows()
+if is_windows()
     if Int == Int32
         println("No binaries for 32 bits windows yet ... ")
     else
