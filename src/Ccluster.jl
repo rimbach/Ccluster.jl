@@ -124,7 +124,7 @@ function ccluster_solve(getApprox::Function,
     
     lccRes = listConnComp()
     ccall( (:ccluster_interface_forJulia, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
+             Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
     
     return lccRes
@@ -144,7 +144,7 @@ function ccluster_refine(qRes::listConnComp,
     getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
     ccall( (:ccluster_refine_forJulia, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ref{Nothing}, Ref{box}, Ref{fmpq}, Int,   Int), 
+             Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Int,   Int), 
                      qRes,              CC,               getApp_c,   initBox,  eps,      strat, verbose )
                     
 end

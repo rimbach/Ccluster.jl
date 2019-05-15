@@ -10,10 +10,10 @@
 #
 
 mutable struct listConnComp
-    _begin::Ref{Nothing}
-    _end::Ref{Nothing}
+    _begin::Ptr{Cvoid}
+    _end::Ptr{Cvoid}
     _size::Cint
-    _clear::Ref{Nothing}
+    _clear::Ptr{Cvoid}
     
     function listConnComp()
         z = new()
@@ -53,7 +53,7 @@ end
 
 function pop_obj_and_ptr( lc::listConnComp )
     res = ccall( (:connCmp_list_pop, :libccluster), 
-                  Ref{connComp}, (Ref{listConnComp},), 
+                  Ptr{connComp}, (Ref{listConnComp},), 
                                  lc)                        
     resobj::connComp = unsafe_load(res)
     return resobj, res
@@ -66,7 +66,7 @@ function push( lc::listConnComp, cc::connComp )
                     lc,               cc)
 end
 
-function push_ptr( lc::listConnComp, cc::Ref{connComp} )
+function push_ptr( lc::listConnComp, cc::Ptr{connComp} )
     ccall( (:connCmp_list_push, :libccluster), 
              Nothing, (Ref{listConnComp}, Ref{connComp}), 
                     lc,               cc)

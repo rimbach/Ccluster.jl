@@ -10,10 +10,10 @@
 #
 
 mutable struct listBox
-    _begin::Ref{Nothing}
-    _end::Ref{Nothing}
+    _begin::Ptr{Cvoid}
+    _end::Ptr{Cvoid}
     _size::Cint
-    _clear::Ref{Nothing}
+    _clear::Ptr{Cvoid}
     
     function listBox()
         z = new()
@@ -41,7 +41,7 @@ end
 
 function pop( lc::listBox )
     res = ccall( (:compBox_list_pop, :libccluster), 
-                  Ref{box}, (Ref{listBox},), 
+                  Ptr{box}, (Ref{listBox},), 
                                  lc)                        
     resobj::box = unsafe_load(res)
     return resobj

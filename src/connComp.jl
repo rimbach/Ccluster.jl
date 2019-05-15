@@ -13,10 +13,10 @@
 
 mutable struct connComp
 #   list of boxes 
-    _boxes_begin::Ref{Nothing}
-    _boxes_end::Ref{Nothing}
+    _boxes_begin::Ptr{Cvoid}
+    _boxes_end::Ptr{Cvoid}
     _boxes_size::Cint
-    _boxes_clear::Ref{Nothing}
+    _boxes_clear::Ptr{Cvoid}
 #     _list_of_boxes::listBox
 #   width: fmpq 
     _width_den::Int
@@ -74,7 +74,7 @@ end
 
 function copy_Ptr( cc::Ref{connComp} )
     res = ccall( (:connCmp_copy, :libccluster), 
-                  Ref{connComp}, (Ref{connComp},), 
+                  Ptr{connComp}, (Ref{connComp},), 
                         cc )
     return res
 end
