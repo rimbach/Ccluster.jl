@@ -1,3 +1,5 @@
+using Libdl
+
 oldwdir = pwd()
 
 @show CCLUSTER_VERSION = "master"
@@ -5,9 +7,9 @@ oldwdir = pwd()
 pkgdir = dirname(dirname(@__FILE__))
 wdir = joinpath(pkgdir, "deps")
 vdir = joinpath(pkgdir, "local")
-NemoLibsDir = joinpath(pkgdir, "..", "Nemo", "local")
+NemoLibsDir = joinpath(pkgdir, "../../packages/Nemo/9nu4c/deps/usr")
 
-if is_apple() && !("CC" in keys(ENV))
+if Sys.isapple() && !("CC" in keys(ENV))
    ENV["CC"] = "clang"
    ENV["CXX"] = "clang++"
 end
@@ -43,7 +45,7 @@ end
 
 cd(wdir)
 
-if !is_windows()
+if !Sys.iswindows()
   println("Cloning Ccluster ... ")
   try
     run(`git clone https://github.com/rimbach/Ccluster.git`)
@@ -65,7 +67,7 @@ end
 
 cd(wdir)
 
-if is_windows()
+if Sys.iswindows()
     if Int == Int32
         println("No binaries for 32 bits windows yet ... ")
     else

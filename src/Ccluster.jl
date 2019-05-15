@@ -1,6 +1,8 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
-
 module Ccluster
+
+VERSION >= v"0.4.0-dev+6521" && __precompile__()
+using Libdl
+
 
 import Nemo: fmpq, acb_poly, fmpq_poly, QQ, prec, parent
 
@@ -19,7 +21,7 @@ function __init__()
 
     if "HOSTNAME" in keys(ENV) && ENV["HOSTNAME"] == "juliabox"
        push!(Libdl.DL_LOAD_PATH, "/usr/local/lib")
-    elseif is_linux()
+    elseif Sys.islinux()
         push!(Libdl.DL_LOAD_PATH, libdir)
     else
         push!(Libdl.DL_LOAD_PATH, libdir)
@@ -37,23 +39,26 @@ include("disk.jl")
 
 __init__()
    
-function ptr_set_acb_poly( dest::Ptr{acb_poly}, src::acb_poly )
-    ccall((:acb_poly_set, :libarb), Void,
-                (Ptr{acb_poly}, Ptr{acb_poly}, Int), 
-                 dest,         &src,          prec(parent(src)))
+function ptr_set_acb_poly( dest::Ref{acb_poly}, src::acb_poly )
+    ccall((:acb_poly_set, :libarb), Nothing,
+                (Ref{acb_poly}, Ref{acb_poly}, Int), 
+                 dest,         src,          prec(parent(src)))
 end
 
-function ptr_set_2fmpq_poly( dest::Ptr{acb_poly}, re::fmpq_poly, im::fmpq_poly, prec::Int )
-    ccall((:acb_poly_set2_fmpq_poly, :libarb), Void,
-                (Ptr{acb_poly}, Ptr{fmpq_poly}, Ptr{fmpq_poly}, Int), 
-                 dest,         &re,             &im,        prec)
+function ptr_set_2fmpq_poly( dest::Ref{acb_poly}, re::fmpq_poly, im::fmpq_poly, prec::Int )
+    ccall((:acb_poly_set2_fmpq_poly, :libarb), Nothing,
+                (Ref{acb_poly}, Ref{fmpq_poly}, Ref{fmpq_poly}, Int), 
+                 dest,         re,             im,        prec)
 end
 
 PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
 
-function getApp_FMPQ( dest::Ptr{acb_poly}, prec::Int )
-    ccall((:acb_poly_set_fmpq_poly, :libarb), Void,
-                (Ptr{acb_poly}, Ptr{fmpq_poly}, Int), dest, &PGLOBALCCLUSTERFMPQ, prec)
+function getApp_FMPQ( dest::Ref{acb_poly}, prec::Int )
+# function getApp_FMPQ( dest::acb_poly, prec::Int )
+#     ccall((:acb_poly_set_fmpq_poly, :libarb), Nothing,
+#                 (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
+    ccall((:acb_poly_set_fmpq_poly, :libarb), Cvoid,
+                (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
 end
 
 function ccluster( P_FMPQ::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, verbose::Int)
@@ -64,8 +69,8 @@ end
 
 function ccluster( P_FMPQ::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int)
     
-    ccall((:fmpq_poly_set, :libflint), Void,
-                (Ptr{fmpq_poly}, Ptr{fmpq_poly}), &PGLOBALCCLUSTERFMPQ, &P_FMPQ)
+    ccall((:fmpq_poly_set, :libflint), Nothing,
+                (Ref{fmpq_poly}, Ref{fmpq_poly}), PGLOBALCCLUSTERFMPQ, P_FMPQ)
 
     return ccluster( getApp_FMPQ, initialBox, eps, strat, verbose)
     
@@ -92,20 +97,18 @@ end
 
 function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, verbose::Int)
     
-    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
-    
+#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     lccRes = listConnComp()
     ccall( (:ccluster_interface_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &lccRes,           getApp_c,   &initBox, &eps,      strat, verbose )
-     
+             Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
+                     lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
     queueResults = []
     while !isEmpty(lccRes)
         tempCC = pop(lccRes)
         tempBO = getComponentBox(tempCC,initBox)
         push!(queueResults, [getNbSols(tempCC),tempBO])
     end
-    
     return queueResults
     
 end
@@ -116,12 +119,13 @@ function ccluster_solve(getApprox::Function,
                         strat::Int, 
                         verbose::Int)
     
-    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
     lccRes = listConnComp()
     ccall( (:ccluster_interface_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &lccRes,           getApp_c,   &initBox, &eps,      strat, verbose )
+             Nothing, (Ref{listConnComp}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
+                     lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
     
     return lccRes
     
@@ -136,11 +140,12 @@ function ccluster_refine(qRes::listConnComp,
                          strat::Int, 
                          verbose::Int = 0 )
     
-    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
     ccall( (:ccluster_refine_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{Void}, Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &qRes,             &CC,               getApp_c,  &initBox, &eps,      strat, verbose )
+             Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ref{Nothing}, Ref{box}, Ref{fmpq}, Int,   Int), 
+                     qRes,              CC,               getApp_c,   initBox,  eps,      strat, verbose )
                     
 end
 
@@ -156,13 +161,14 @@ function ccluster_DAC_first(qRes::listConnComp,
     
 #     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
     
-    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
     ccall( (:ccluster_DAC_first_interface_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
-                    Ptr{Void},Int, Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &qRes,             &qAllRes,          &qMainLoop,        &discardedCcs,
-                    getApp_c,  nbSols, &initBox, &eps,      strat, verbose )
+             Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ref{listConnComp}, Ref{listConnComp}, 
+                    Ref{Nothing},Int, Ref{box}, Ref{fmpq}, Int,   Int), 
+                     qRes,              qAllRes,           qMainLoop,         discardedCcs,
+                    getApp_c,  nbSols,  initBox,  eps,      strat, verbose )
                     
     return
     
@@ -180,13 +186,14 @@ function ccluster_DAC_next(qRes::listConnComp,
     
 #     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
     
-    const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
     ccall( (:ccluster_DAC_next_interface_forJulia, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, 
-                    Ptr{Void}, Int, Ptr{box}, Ptr{fmpq}, Int,   Int), 
-                    &qRes,             &qAllRes,          &qMainLoop,        &discardedCcs,
-                    getApp_c,  nbSols, &initBox, &eps,      strat, verbose )
+             Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ref{listConnComp}, Ref{listConnComp}, 
+                    Ref{Nothing}, Int, Ref{box}, Ref{fmpq}, Int,   Int), 
+                     qRes,              qAllRes,           qMainLoop,         discardedCcs,
+                    getApp_c,  nbSols,  initBox,  eps,      strat, verbose )
     
     return 
     
@@ -195,14 +202,14 @@ end
 # function ccluster_draw( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
 #     
 #     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
-#     const getApp_c = cfunction(getApprox, Void, (Ptr{acb_poly}, Int))
+#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
 #     
 #     lccRes = listConnComp()
 #     lcbDis = listBox()
 #     
 #     ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
-#              Void, (Ptr{listConnComp},Ptr{listBox}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
-#                     &lccRes, &lcbDis,          getApp_c,   &initBox, &eps,      strat, verbose )
+#              Nothing, (Ref{listConnComp},Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,  lcbDis,          getApp_c,    initBox,  eps,      strat, verbose )
 #      
 #     queueResults = []
 #     while !isEmpty(lccRes)
@@ -228,9 +235,9 @@ export ccluster
 
 # POLY_GLOBAL = fmpq_poly()
 # 
-# function GETAPP_GLOBAL( dest::Ptr{acb_poly}, prec::Int )
-#     ccall((:acb_poly_set_fmpq_poly, :libarb), Void,
-#                 (Ptr{acb_poly}, Ptr{fmpq_poly}, Int), dest, &POLY_GLOBAL, prec)
+# function GETAPP_GLOBAL( dest::Ref{acb_poly}, prec::Int )
+#     ccall((:acb_poly_set_fmpq_poly, :libarb), Nothing,
+#                 (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest,  POLY_GLOBAL, prec)
 # end
 # 
 # function Ccluster( poly::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
@@ -238,13 +245,13 @@ export ccluster
 #     POLY_GLOBAL = poly
 #     
 #     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
-#     const getApp_c = cfunction(GETAPP_GLOBAL, Void, (Ptr{acb_poly}, Int))
+#     const getApp_c = cfunction(GETAPP_GLOBAL, Nothing, (Ref{acb_poly}, Int))
 #     
 #     lccRes = listConnComp()
 #     
 #     ccall( (:ccluster_interface_forJulia, :libccluster), 
-#              Void, (Ptr{listConnComp}, Ptr{Void},    Ptr{box}, Ptr{fmpq}, Int,   Int), 
-#                     &lccRes,           getApp_c,   &initBox, &eps,      strat, verbose )
+#              Nothing, (Ref{listConnComp}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
 #      
 #      
 #     queueResults::Array{Array{fmpq,1},1} = []

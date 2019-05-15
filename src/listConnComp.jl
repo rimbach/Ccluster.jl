@@ -9,32 +9,33 @@
 #  (at your option) any later version.  See <http://www.gnu.org/licenses/>.
 #
 
-type listConnComp
-    _begin::Ptr{Void}
-    _end::Ptr{Void}
+mutable struct listConnComp
+    _begin::Ref{Nothing}
+    _end::Ref{Nothing}
     _size::Cint
-    _clear::Ptr{Void}
+    _clear::Ref{Nothing}
     
     function listConnComp()
         z = new()
         ccall( (:connCmp_list_init, :libccluster), 
-             Void, (Ptr{listConnComp},), 
-                    &z)
-        finalizer(z, _listConnComp_clear_fn)
+             Nothing, (Ref{listConnComp},), 
+                    z)
+#         finalizer(z, _listConnComp_clear_fn)
+        finalizer(_listConnComp_clear_fn, z)
         return z
     end
 end
 
 function _listConnComp_clear_fn(lc::listConnComp)
     ccall( (:connCmp_list_clear, :libccluster), 
-         Void, (Ptr{listConnComp},), 
-                &lc)
+         Nothing, (Ref{listConnComp},), 
+                lc)
 end
 
 function isEmpty( lc::listConnComp )
     res = ccall( (:connCmp_list_is_empty, :libccluster), 
-                  Cint, (Ptr{listConnComp},), 
-                        &lc )
+                  Cint, (Ref{listConnComp},), 
+                        lc )
     return Bool(res)
 end
 
@@ -44,16 +45,16 @@ end
 
 function pop( lc::listConnComp )
     res = ccall( (:connCmp_list_pop, :libccluster), 
-                  Ptr{connComp}, (Ptr{listConnComp},), 
-                                 &lc)                        
+                  Ptr{connComp}, (Ref{listConnComp},), 
+                                 lc)
     resobj::connComp = unsafe_load(res)
     return resobj
 end
 
 function pop_obj_and_ptr( lc::listConnComp )
     res = ccall( (:connCmp_list_pop, :libccluster), 
-                  Ptr{connComp}, (Ptr{listConnComp},), 
-                                 &lc)                        
+                  Ref{connComp}, (Ref{listConnComp},), 
+                                 lc)                        
     resobj::connComp = unsafe_load(res)
     return resobj, res
 end
@@ -61,14 +62,14 @@ end
 
 function push( lc::listConnComp, cc::connComp )
     ccall( (:connCmp_list_push, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{connComp}), 
-                    &lc,               &cc)
+             Nothing, (Ref{listConnComp}, Ref{connComp}), 
+                    lc,               cc)
 end
 
-function push_ptr( lc::listConnComp, cc::Ptr{connComp} )
+function push_ptr( lc::listConnComp, cc::Ref{connComp} )
     ccall( (:connCmp_list_push, :libccluster), 
-             Void, (Ptr{listConnComp}, Ptr{connComp}), 
-                    &lc,               cc)
+             Nothing, (Ref{listConnComp}, Ref{connComp}), 
+                    lc,               cc)
 end
 
 

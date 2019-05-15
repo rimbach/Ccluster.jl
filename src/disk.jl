@@ -9,7 +9,7 @@
 #  (at your option) any later version.  See <http://www.gnu.org/licenses/>.
 #
 
-type disk
+mutable struct disk
     _center_real_den::Int
     _center_real_num::Int
     _center_imag_den::Int
@@ -20,9 +20,10 @@ type disk
     function disk()
         z = new()
         ccall( (:compDsk_init, :libccluster), 
-             Void, (Ptr{disk},), 
-                    &z)
-        finalizer(z, _disk_clear_fn)
+             Nothing, (Ref{disk},), 
+                    z)
+#         finalizer(z, _disk_clear_fn)
+        finalizer(_disk_clear_fn, z)
         return z
     end
     
@@ -30,58 +31,59 @@ type disk
         z = new()
         
         ccall( (:compDsk_init, :libccluster), 
-             Void, (Ptr{disk},), 
-                    &z)
+             Nothing, (Ref{disk},), 
+                    z)
         ccall( (:compDsk_set_3realRat, :libccluster), 
-             Void, (Ptr{disk}, Ptr{fmpq}, Ptr{fmpq}, Ptr{fmpq}), 
-                    &z,        &re,       &im,       &rad)
-        finalizer(z, _disk_clear_fn)
+             Nothing, (Ref{disk}, Ref{fmpq}, Ref{fmpq}, Ref{fmpq}), 
+                    z,        re,       im,       rad)
+#         finalizer(z, _disk_clear_fn)
+        finalizer(_disk_clear_fn, z)
         return z
     end
 end
 
 function _disk_clear_fn(d::disk)
     ccall( (:compDsk_clear, :libccluster), 
-         Void, (Ptr{disk},), 
-                &d)
+         Nothing, (Ref{disk},), 
+                d)
 end
 
 function getCenterRe(d::disk)
     res = fmpq(0,1)
     ccall( (:compDsk_get_centerRe, :libccluster), 
-             Void, (Ptr{fmpq}, Ptr{disk}), 
-                    &res,      &d)
+             Nothing, (Ref{fmpq}, Ref{disk}), 
+                    res,      d)
     return res
 end
 
 function getCenterIm(d::disk)
     res = fmpq(0,1)
     ccall( (:compDsk_get_centerIm, :libccluster), 
-             Void, (Ptr{fmpq}, Ptr{disk}), 
-                    &res,      &d)
+             Nothing, (Ref{fmpq}, Ref{disk}), 
+                    res,      d)
     return res
 end
 
 function getRadius(d::disk)
     res = fmpq(0,1)
     ccall( (:compDsk_get_radius, :libccluster), 
-             Void, (Ptr{fmpq}, Ptr{disk}), 
-                    &res,      &d)
+             Nothing, (Ref{fmpq}, Ref{disk}), 
+                    res,      d)
     return res
 end
 
 function inflateDisk(d::disk, ratio::fmpq)
     res = disk()
     ccall( (:compDsk_inflate_realRat, :libccluster), 
-             Void, (Ptr{disk}, Ptr{disk}, Ptr{fmpq}), 
-                    &res,      &d,        &ratio)
+             Nothing, (Ref{disk}, Ref{disk}, Ref{fmpq}), 
+                    res,      d,        ratio)
     return res
 end
 
 function isSeparated(d::disk, qMainLoop::listConnComp, qResults::listConnComp, qAllResults::listConnComp, discardedCcs::listConnComp )
     res = ccall( (:ccluster_compDsk_is_separated_DAC, :libccluster), 
-                   Cint, (Ptr{disk}, Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}, Ptr{listConnComp}), 
-                          &d,        &qMainLoop,       &qResults,           &qAllResults,       &discardedCcs)
+                   Cint, (Ref{disk}, Ref{listConnComp}, Ref{listConnComp}, Ref{listConnComp}, Ref{listConnComp}), 
+                          d,        qMainLoop,       qResults,           qAllResults,       discardedCcs)
     return Bool(res)
 end
     

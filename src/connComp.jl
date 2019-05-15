@@ -11,12 +11,12 @@
 
 # saveBoxForDebug = []
 
-type connComp
+mutable struct connComp
 #   list of boxes 
-    _boxes_begin::Ptr{Void}
-    _boxes_end::Ptr{Void}
+    _boxes_begin::Ref{Nothing}
+    _boxes_end::Ref{Nothing}
     _boxes_size::Cint
-    _boxes_clear::Ptr{Void}
+    _boxes_clear::Ref{Nothing}
 #     _list_of_boxes::listBox
 #   width: fmpq 
     _width_den::Int
@@ -47,9 +47,10 @@ type connComp
     function connComp()
         z = new()
         ccall( (:connCmp_init, :libccluster), 
-             Void, (Ptr{connComp},), 
-                    &z)
-        finalizer(z, _connComp_clear_fn)
+             Nothing, (Ref{connComp},), 
+                    z)
+#         finalizer(z, _connComp_clear_fn)
+        finalizer(_connComp_clear_fn, z)
         return z
     end
     
@@ -57,7 +58,7 @@ type connComp
 #         push!(saveBoxForDebug, b)
 #         z = new()
 #         ccall( (:connCmp_init_compBox, :libccluster), 
-#              Void, (Ptr{connComp}, Ptr{box}), 
+#              Nothing, (Ref{connComp}, Ref{box}), 
 #                     &z,            &b)
 #         finalizer(z, _connComp_clear_fn)
 #         return z
@@ -67,13 +68,13 @@ end
 
 function _connComp_clear_fn(cc::connComp)
     ccall( (:connCmp_clear, :libccluster), 
-         Void, (Ptr{connComp},), 
-                &cc)
+         Nothing, (Ref{connComp},), 
+                cc)
 end
 
-function copy_Ptr( cc::Ptr{connComp} )
+function copy_Ptr( cc::Ref{connComp} )
     res = ccall( (:connCmp_copy, :libccluster), 
-                  Ptr{connComp}, (Ptr{connComp},), 
+                  Ref{connComp}, (Ref{connComp},), 
                         cc )
     return res
 end
@@ -90,23 +91,23 @@ function getComponentBox(cc::connComp, initialBox::box)
     
     res = box()
     ccall( (:connCmp_componentBox, :libccluster), 
-             Void, (Ptr{box}, Ptr{connComp}, Ptr{box}), 
-                    &res,      &cc,           &initialBox);
+             Nothing, (Ref{box}, Ref{connComp}, Ref{box}), 
+                    res,      cc,           initialBox);
     return res
     
 end
 
 function pop( cc::connComp )
     res = ccall( (:connCmp_pop, :libccluster), 
-                  Ptr{box}, (Ptr{connComp},), 
-                                 &cc)                        
+                  Ref{box}, (Ref{connComp},), 
+                                 cc)                        
     resobj::box = unsafe_load(res)
     return resobj
 end
 
 function isEmpty(cc::connComp)
     res = ccall( (:connCmp_is_empty, :libccluster), 
-                  Cint, (Ptr{connComp},), 
-                        &cc )
+                  Cint, (Ref{connComp},), 
+                        cc )
     return Bool(res)
 end

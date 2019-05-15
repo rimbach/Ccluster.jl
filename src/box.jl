@@ -9,7 +9,7 @@
 #  (at your option) any later version.  See <http://www.gnu.org/licenses/>.
 #
 
-type box
+mutable struct box
     _center_real_den::Int
     _center_real_num::Int
     _center_imag_den::Int
@@ -21,12 +21,13 @@ type box
     function box()
         z = new()
 #         ccall( (:compBox_init_forJulia, :libccluster), 
-#              Void, (Ptr{box},), 
+#              Nothing, (Ref{box},), 
 #                     &z)
         ccall( (:compBox_init, :libccluster), 
-             Void, (Ptr{box},), 
-                    &z)
-        finalizer(z, _box_clear_fn)
+             Nothing, (Ref{box},), 
+                    z)
+#         finalizer(z, _box_clear_fn)
+        finalizer(_box_clear_fn, z)
         return z
     end
     
@@ -34,12 +35,13 @@ type box
         z = new()
         
         ccall( (:compBox_init, :libccluster), 
-             Void, (Ptr{box},), 
-                    &z)
+             Nothing, (Ref{box},), 
+                    z)
         ccall( (:compBox_set_3realRat, :libccluster), 
-             Void, (Ptr{box}, Ptr{fmpq}, Ptr{fmpq}, Ptr{fmpq}), 
-                    &z,        &re,       &im,       &width)
-        finalizer(z, _box_clear_fn)
+             Nothing, (Ref{box}, Ref{fmpq}, Ref{fmpq}, Ref{fmpq}), 
+                    z,        re,      im,       width)
+#         finalizer(z, _box_clear_fn)
+        finalizer(_box_clear_fn, z)
         return z
     end
     
@@ -47,10 +49,10 @@ type box
 #         z = new()
 #         
 #         ccall( (:compBox_init, :libccluster), 
-#              Void, (Ptr{box},), 
+#              Nothing, (Ref{box},), 
 #                     &z)
 #         ccall( (:compBox_set_3realRat_int, :libccluster), 
-#              Void, (Ptr{box}, Ptr{fmpq}, Ptr{fmpq}, Ptr{fmpq}, Int), 
+#              Nothing, (Ref{box}, Ref{fmpq}, Ref{fmpq}, Ref{fmpq}, Int), 
 #                     &z,        &re,       &im,       &width,   nbSols)
 #         finalizer(z, _box_clear_fn)
 #         return z
@@ -59,31 +61,31 @@ end
 
 function _box_clear_fn(d::box)
     ccall( (:compBox_clear, :libccluster), 
-         Void, (Ptr{box},), 
-                &d)
+         Nothing, (Ref{box},), 
+                d)
 end
 
 function getCenterRe(d::box)
     res = fmpq(0,1)
     ccall( (:compBox_get_centerRe, :libccluster), 
-             Void, (Ptr{fmpq}, Ptr{box}), 
-                    &res,      &d)
+             Nothing, (Ref{fmpq}, Ref{box}), 
+                    res,      d)
     return res
 end
 
 function getCenterIm(d::box)
     res = fmpq(0,1)
     ccall( (:compBox_get_centerIm, :libccluster), 
-             Void, (Ptr{fmpq}, Ptr{box}), 
-                    &res,      &d)
+             Nothing, (Ref{fmpq}, Ref{box}), 
+                    res,      d)
     return res
 end
 
 function getWidth(d::box)
     res = fmpq(0,1)
     ccall( (:compBox_get_bwidth, :libccluster), 
-             Void, (Ptr{fmpq}, Ptr{box}), 
-                    &res,      &d)
+             Nothing, (Ref{fmpq}, Ref{box}), 
+                    res,      d)
     return res
 end
 

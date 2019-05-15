@@ -9,39 +9,40 @@
 #  (at your option) any later version.  See <http://www.gnu.org/licenses/>.
 #
 
-type listBox
-    _begin::Ptr{Void}
-    _end::Ptr{Void}
+mutable struct listBox
+    _begin::Ref{Nothing}
+    _end::Ref{Nothing}
     _size::Cint
-    _clear::Ptr{Void}
+    _clear::Ref{Nothing}
     
     function listBox()
         z = new()
         ccall( (:compBox_list_init, :libccluster), 
-             Void, (Ptr{listBox},), 
-                    &z)
+             Nothing, (Ref{listBox},), 
+                    z)
 #         finalizer(z, _listBox_clear_fn)
+#         finalizer(_listBox_clear_fn, z)
         return z
     end
 end
 
 function _listBox_clear_fn(lc::listBox)
     ccall( (:compBox_list_clear, :libccluster), 
-         Void, (Ptr{listBox},), 
-                &lc)
+         Nothing, (Ref{listBox},), 
+                lc)
 end
 
 function isEmpty( lc::listBox )
     res = ccall( (:compBox_list_is_empty, :libccluster), 
-                  Cint, (Ptr{listBox},), 
-                        &lc )
+                  Cint, (Ref{listBox},), 
+                        lc )
     return Bool(res)
 end
 
 function pop( lc::listBox )
     res = ccall( (:compBox_list_pop, :libccluster), 
-                  Ptr{box}, (Ptr{listBox},), 
-                                 &lc)                        
+                  Ref{box}, (Ref{listBox},), 
+                                 lc)                        
     resobj::box = unsafe_load(res)
     return resobj
 end
@@ -49,8 +50,8 @@ end
 
 function push( lc::listBox, cc::box )
     ccall( (:compBox_list_push, :libccluster), 
-             Void, (Ptr{listBox}, Ptr{box}), 
-                    &lc,               &cc)
+             Nothing, (Ref{listBox}, Ref{box}), 
+                    lc,               cc)
 end
 
 
