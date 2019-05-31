@@ -82,14 +82,14 @@ if Sys.iswindows()
 #         download_dll("https://cims.nyu.edu/~imbach/libs/libarb-2.dll", joinpath(vdir, "lib", "libarb-2.dll"))
         download_dll("https://cims.nyu.edu/~imbach/libs/libccluster.dll", joinpath(vdir, "lib", "libccluster.dll"))
         try
-            run(`ln -sf $NemoLibsDir\\lib\\libflint-13.dll $vdir\\lib\\libflint-13.dll`)
+            run(`ln -sf $NemoLibsDir\\bin\\libflint-13.dll $vdir\\lib\\libflint-13.dll`)
         catch
-            cp(joinpath(NemoLibsDir, "lib", "libflint-13.dll"), joinpath(vdir, "lib", "libflint-13.dll"), remove_destination=true)
+            cp(joinpath(NemoLibsDir, "bin", "libflint-13.dll"), joinpath(vdir, "lib", "libflint-13.dll"), remove_destination=true)
         end
         try
-            run(`ln -sf $NemoLibsDir\\lib\\libarb.dll $vdir\\lib\\libarb-2.dll`)
+            run(`ln -sf $NemoLibsDir\\bin\\libarb.dll $vdir\\lib\\libarb-2.dll`)
         catch
-            cp(joinpath(NemoLibsDir, "lib", "libarb.dll"), joinpath(vdir, "lib", "libarb-2.dll"), remove_destination=true)
+            cp(joinpath(NemoLibsDir, "bin", "libarb.dll"), joinpath(vdir, "lib", "libarb-2.dll"), remove_destination=true)
         end
     end
     println("DONE")
