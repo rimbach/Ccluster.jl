@@ -204,10 +204,15 @@ eps = fmpq(1,100)
 ```
 or
 ```
-eps = fmpq(1, fmpz(2)^(-53))
+eps = fmpq(1, fmpz(2)^(53))
 ```
 
 Unless you know what you are doing, setting *eps* to 0 is a very bad idea.
 
 ### The verbosity flag
 Use 0 unless you want statistics on the solving process.
+
+### Compute clusters of roots
+```
+Roots = ccluster(getApproximation, bInit, eps, 1)
+```
