@@ -37,8 +37,7 @@ if you use it in your research.
 You can install it within Julia with:
 
 ```
-Pkg.clone("https://github.com/rimbach/Ccluster.jl.git")
-Pkg.build("Ccluster")
+] add https://github.com/rimbach/Ccluster.jl
 ```
 Ccluster depends on Nemo that will be automatically installed.
 
