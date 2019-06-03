@@ -27,8 +27,8 @@ mutable struct algClus                      # represents an algebraic cluster \a
         z._CC = ptrCC
         
         z._isolatingBox = Ccluster.getComponentBox(objCC,z._initBox)
-        R = RealField(z._prec)
-        C = ComplexField(z._prec)
+        R::Nemo.ArbField = Nemo.RealField(z._prec)
+        C::Nemo.AcbField = Nemo.ComplexField(z._prec)
         bRe::Nemo.arb = Nemo.ball(R(Ccluster.getCenterRe(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
         bIm::Nemo.arb = Nemo.ball(R(Ccluster.getCenterIm(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
         z._approx = C(bRe, bIm)
@@ -44,8 +44,8 @@ mutable struct algClus                      # represents an algebraic cluster \a
         z._CC = Ccluster.copy_Ptr(a._CC)
         
         z._isolatingBox = Ccluster.box( Ccluster.getCenterRe(a._isolatingBox), Ccluster.getCenterIm(a._isolatingBox), Ccluster.getWidth(a._isolatingBox) )
-        R = RealField(z._prec)
-        C = ComplexField(z._prec)
+        R::Nemo.ArbField = Nemo.RealField(z._prec)
+        C::Nemo.AcbField = Nemo.ComplexField(z._prec)
         bRe::Nemo.arb = Nemo.ball(R(Ccluster.getCenterRe(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
         bIm::Nemo.arb = Nemo.ball(R(Ccluster.getCenterIm(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
         z._approx = C(bRe, bIm)
@@ -63,8 +63,30 @@ function toStr(a::algClus)
     return res
 end
 
+function getPrec(a::algClus)::Int          #get the precision of a cluster
+    return a._prec
+end
+
+function getPrec(a::Array{algClus,1})::Int #get the precision of a TAC, i.e. an array of algClus
+    prec::Int = a[1]._prec
+    for index in 2:length(a)
+        if a[index]._prec < prec
+            prec = a[index]._prec
+        end
+    end
+    return prec
+end
+
+function getPrecs(a::Array{algClus,1})::Array{Int,1}   #get the array of precisions of a TAC
+    precs = Int[]
+    for index in 1:length(a)
+        push!(precs, a[index]._prec)
+    end
+    return precs
+end
+
 #copying
-function copyIn( dest::algClus, src::algClus )
+function copyIn( dest::algClus, src::algClus )::Nothing
     dest._nbSols = src._nbSols
     dest._prec = src._prec
     dest._isolatingBox = Ccluster.box( Ccluster.getCenterRe(src._isolatingBox), 
@@ -72,27 +94,103 @@ function copyIn( dest::algClus, src::algClus )
                                        Ccluster.getWidth(src._isolatingBox) )
     dest._initBox = Ccluster.box( Ccluster.getCenterRe(src._initBox), Ccluster.getCenterIm(src._initBox), Ccluster.getWidth(src._initBox) )
     dest._CC = Ccluster.copy_Ptr(src._CC)
-    R = RealField(src._prec)
-    C = ComplexField(src._prec)
+    R::Nemo.ArbField = Nemo.RealField(src._prec)
+    C::Nemo.AcbField = Nemo.ComplexField(src._prec)
     bRe::Nemo.arb = Nemo.ball(R(Ccluster.getCenterRe(dest._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(dest._isolatingBox)))
     bIm::Nemo.arb = Nemo.ball(R(Ccluster.getCenterIm(dest._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(dest._isolatingBox)))
     dest._approx = C(bRe, bIm);
 end
 
-function copyIn( dest::Array{algClus,1}, src::Array{algClus,1} )
+function copyIn( dest::Array{algClus,1}, src::Array{algClus,1} )::Nothing
     for index in 1:length(src)
         copyIn( dest[index], src[index] )
     end
 end
 
-function clusCopy(a::algClus)
+function clusCopy(a::algClus)::Ccluster.algClus
     return algClus(a)
 end
 
-function clusCopy(a::Array{algClus,1})
-    res=[]
+function clusCopy(a::Array{algClus,1})::Array{Ccluster.algClus,1}
+    res=Ccluster.algClus[]
     for index in 1:length(a)
         push!(res, algClus(a[index]))
     end
     return res
 end
+
+#require: prec<=a._prec
+function getApproximation(a::algClus, prec::Int)::Nemo.acb #get approximation of the center 
+#     R::Nemo.ArbField = Nemo.RealField(prec)
+    C::Nemo.AcbField = Nemo.ComplexField(prec)
+    if prec<a._prec
+        return C(a._approx)
+    else
+        return a._approx
+    end
+end
+
+# #require: prec<=getPrec(a)
+function getApproximation(a::Array{algClus,1}, prec::Int)::Array{Nemo.acb,1}
+    res=Nemo.acb[]
+    for index in 1:length(a)
+        push!(res, getApproximation(a[index], prec) )
+    end
+    return res
+end
+
+function getBestApproximation(a::algClus)::Nemo.acb
+    return a._approx
+end
+
+function getBestApproximation(a::Array{algClus,1})::Array{Nemo.acb,1}
+    res=Nemo.acb[]
+    for index in 1:length(a)
+        push!(res, getBestApproximation(a[index]) )
+    end
+    return res
+end
+
+# refine an algebraic cluster
+function refine_algClus( a::algClus, getApproximation::Function, prec::Int, strat::Int, verb::Int )::Array{Array{Ccluster.algClus,1},1}
+    lCC = Ccluster.listConnComp()
+    lCCRes = Ccluster.listConnComp()
+    eps::Nemo.fmpq = Nemo.fmpq(1, fmpz(2)^(prec-1))
+    Ccluster.push_ptr(lCC, a._CC)
+    Ccluster.ccluster_refine(lCCRes, getApproximation, lCC, a._initBox, eps, strat, verb)
+    
+    res = Array{Ccluster.algClus,1}[]
+    while !Ccluster.isEmpty(lCCRes)
+        objCC, ptrCC = Ccluster.pop_obj_and_ptr(lCCRes)
+        push!(res, [algClus( objCC, ptrCC, a._initBox, prec )] )
+    end
+    
+    return res
+end
+
+# # test with sqrt(2)
+# using Nemo
+# Rx, x = PolynomialRing(QQ, "x")
+# P = x^2 - fmpq(2)
+# function getApproximation( dest::Ptr{acb_poly}, prec::Int )
+#     ccall((:acb_poly_set_fmpq_poly, :libarb), 
+#       Cvoid, (Ptr{acb_poly}, Ref{fmpq_poly}, Int), 
+#              dest,          P,            prec)
+# end
+# mprec = 53
+# eps = fmpq(1, fmpz(2)^(mprec-1))
+# strat = 23
+# bInit = Ccluster.box(Nemo.fmpq(1,1),Nemo.fmpq(0,1),Nemo.fmpq(1,1))
+# # qRes = Ccluster.ccluster(getApproximation, bInit, eps, strat, 1);
+# qRes = Ccluster.ccluster_solve(getApproximation, bInit, eps, strat, 1)
+# objCC, ptrCC = Ccluster.pop_obj_and_ptr(qRes)
+# sqrtOfTwo = Ccluster.algClus(objCC, ptrCC, bInit, 53)
+# Ccluster.toStr(sqrtOfTwo)
+# sqrtOfTwo2 = Ccluster.algClus(sqrtOfTwo)
+# sqrtOfTwo3 = Ccluster.algClus(sqrtOfTwo)
+# Ccluster.getApproximation(sqrtOfTwo,53)
+# Ccluster.getBestApproximation(sqrtOfTwo)
+# Ccluster.getApproximation([sqrtOfTwo2, sqrtOfTwo3],53)
+# Ccluster.getBestApproximation([sqrtOfTwo2, sqrtOfTwo3])
+# 
+# res = Ccluster.refine_algClus( sqrtOfTwo, getApproximation, 212, strat, 0)
