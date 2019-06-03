@@ -47,7 +47,7 @@ mutable struct algClus                      # represents an algebraic cluster \a
         R = RealField(z._prec)
         C = ComplexField(z._prec)
         bRe::Nemo.arb = Nemo.ball(R(Ccluster.getCenterRe(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
-        bIm::Nemo.arb = Nemo. = ball(R(Ccluster.getCenterIm(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
+        bIm::Nemo.arb = Nemo.ball(R(Ccluster.getCenterIm(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
         z._approx = C(bRe, bIm)
         return z
     end
