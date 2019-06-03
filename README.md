@@ -152,9 +152,7 @@ Output (total time in s on a Intel(R) Core(TM) i7-7600U CPU @ 2.80GHz):
 |number of clusters:                                 63               |
 |number of solutions:                                63               |
  -------------------Stats:    ----------------------------------------
-|tree depth:                                         20               |
-|tree size:                                        2096               |
-|total time:                                   3.540887               |
+|total time:                                   1.802102               |
  ---------------------------------------------------------------------
 63-element Array{Any,1}:
  Any[1, Nemo.fmpq[-3125//32768, 5125//8192, 375//65536]]    
