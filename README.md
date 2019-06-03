@@ -43,7 +43,7 @@ Ccluster depends on Nemo that will be automatically installed.
 
 For graphical outputs, install the package CclusterPlot with
 ```
-Pkg.clone("https://github.com/rimbach/CclusterPlot.jl.git")
+] add https://github.com/rimbach/CclusterPlot.jl
 ```
 CclusterPlot depends on PyCall and PyPlot, and requires that matplotlib is installed
 on your system.
