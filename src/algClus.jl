@@ -13,7 +13,7 @@ mutable struct algClus                      # represents an algebraic cluster \a
     _nbSols::Int                            # the sum of multiplicity of roots in the cluster
     _prec::Int                              # the precision of the cluster; i.e. w() < 2*2^{-prec}
     _isolatingBox::Ccluster.box             # a box isolating \alpha st width(_isolatingBox) < 2*2^(-prec)
-    _approx::acb                            # satisfies |\alpha - a |<2^{-prec}
+    _approx::Nemo.acb                       # satisfies |\alpha - a |<2^{-prec}
     
     _CC::Ptr{Ccluster.connComp}             # a pointer on the connected component of boxes
     _initBox::Ccluster.box                  # the initial box i.e. root in the subdivision tree
