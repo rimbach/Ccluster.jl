@@ -18,7 +18,7 @@ mutable struct algClus                      # represents an algebraic cluster \a
     _CC::Ptr{Ccluster.connComp}             # a pointer on the connected component of boxes
     _initBox::Ccluster.box                  # the initial box i.e. root in the subdivision tree
     
-    function algClus( objCC::Ccluster.connComp, ptrCC::Ptr{Ccluster.connComp}, bInit::Ccluster.box, prec )
+    function algClus( objCC::Ccluster.connComp, ptrCC::Ptr{Ccluster.connComp}, bInit::Ccluster.box, prec::Int )
         z = new()
         
         z._nbSols = Ccluster.getNbSols(objCC)
@@ -29,8 +29,8 @@ mutable struct algClus                      # represents an algebraic cluster \a
         z._isolatingBox = Ccluster.getComponentBox(objCC,z._initBox)
         R = RealField(z._prec)
         C = ComplexField(z._prec)
-        bRe = ball(R(Ccluster.getCenterRe(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
-        bIm = ball(R(Ccluster.getCenterIm(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
+        bRe::Nemo.arb = Nemo.ball(R(Ccluster.getCenterRe(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
+        bIm::Nemo.arb = Nemo.ball(R(Ccluster.getCenterIm(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
         z._approx = C(bRe, bIm)
         return z
     end
@@ -46,9 +46,53 @@ mutable struct algClus                      # represents an algebraic cluster \a
         z._isolatingBox = Ccluster.box( Ccluster.getCenterRe(a._isolatingBox), Ccluster.getCenterIm(a._isolatingBox), Ccluster.getWidth(a._isolatingBox) )
         R = RealField(z._prec)
         C = ComplexField(z._prec)
-        bRe = ball(R(Ccluster.getCenterRe(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
-        bIm = ball(R(Ccluster.getCenterIm(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
+        bRe::Nemo.arb = Nemo.ball(R(Ccluster.getCenterRe(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
+        bIm::Nemo.arb = Nemo. = ball(R(Ccluster.getCenterIm(z._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(z._isolatingBox)))
         z._approx = C(bRe, bIm)
         return z
     end
+end
+
+function toStr(a::algClus)
+    res = ""
+    res = res * "algebraic cluster: prec: $(a._prec), nbsols: $(a._nbSols)\n"
+    res = res * Ccluster.toStr(a._isolatingBox)
+    res = res * "\n approx: $(a._approx)"
+    res = res * "\n"
+    res 
+    return res
+end
+
+#copying
+function copyIn( dest::algClus, src::algClus )
+    dest._nbSols = src._nbSols
+    dest._prec = src._prec
+    dest._isolatingBox = Ccluster.box( Ccluster.getCenterRe(src._isolatingBox), 
+                                       Ccluster.getCenterIm(src._isolatingBox), 
+                                       Ccluster.getWidth(src._isolatingBox) )
+    dest._initBox = Ccluster.box( Ccluster.getCenterRe(src._initBox), Ccluster.getCenterIm(src._initBox), Ccluster.getWidth(src._initBox) )
+    dest._CC = Ccluster.copy_Ptr(src._CC)
+    R = RealField(src._prec)
+    C = ComplexField(src._prec)
+    bRe::Nemo.arb = Nemo.ball(R(Ccluster.getCenterRe(dest._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(dest._isolatingBox)))
+    bIm::Nemo.arb = Nemo.ball(R(Ccluster.getCenterIm(dest._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(dest._isolatingBox)))
+    dest._approx = C(bRe, bIm);
+end
+
+function copyIn( dest::Array{algClus,1}, src::Array{algClus,1} )
+    for index in 1:length(src)
+        copyIn( dest[index], src[index] )
+    end
+end
+
+function clusCopy(a::algClus)
+    return algClus(a)
+end
+
+function clusCopy(a::Array{algClus,1})
+    res=[]
+    for index in 1:length(a)
+        push!(res, algClus(a[index]))
+    end
+    return res
 end
