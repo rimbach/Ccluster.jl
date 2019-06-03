@@ -36,6 +36,7 @@ include("listBox.jl")
 include("connComp.jl")
 include("listConnComp.jl")
 include("disk.jl")
+include("algClus.jl")
 
 __init__()
    
