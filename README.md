@@ -1,7 +1,7 @@
 # Ccluster.jl
 
 Ccluster.jl is a Julia wrapper for Ccluster (https://github.com/rimbach/Ccluster.git)
-Ccluster implements a clustering algorithm for univariate polynomials whose
+that implements a clustering algorithm for univariate polynomials whose
 coefficients are complex numbers.
 
 Ccluster.jl is compatible with julia >= 1.1.0.
