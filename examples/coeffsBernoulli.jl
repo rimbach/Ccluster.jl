@@ -6,6 +6,7 @@ n = 64 #degree
 P = zero(R)
 bernoulli_cache(n)
 for k = 0:n
+    global P
     coefficient = (binom(n,k))*(bernoulli(n-k))
     P = P + coefficient*x^k
 end #P is now the Bernoulli polynomial of degree 8
