@@ -9,7 +9,10 @@
 #  (at your option) any later version.  See <http://www.gnu.org/licenses/>.
 #
 
+using Printf
+
 export TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS, TCLUSTER_STRA, TCLUSTER_VERB
+export tcluster
 
 # global variables
 TCLUSTER_POLS = [[]]
@@ -18,6 +21,164 @@ TCLUSTER_CLUS = [[]]
 TCLUSTER_DEGS = [[]]
 TCLUSTER_STRA = [23] 
 TCLUSTER_VERB = [0] 
+
+### interface
+function tcluster( polys,  #an array of pols
+                   domain, #an array of Ccluster.box, possibly of length 1
+                   prec;   #a precision: Int
+                   strat=23,  #a strategy: Int
+                   verbosity="brief" ) #a verbosity flag; by defaults, a brief summary
+                                       #options are "silent", "results" 
+                   
+    global TCLUSTER_STRA, TCLUSTER_VERB
+    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
+
+    Ccluster.initializeGlobalVariables(polys)
+    
+    #construct the initial domain
+    initBox::Array{Ccluster.box,1}=[]
+    if !initializeInitialDomain(initBox, domain)
+        return -1, []
+    end
+    
+    TCLUSTER_STRA[1] = strat
+    
+    if typeof(verbosity) == String
+        TCLUSTER_VERB[1] = 0
+    else
+        TCLUSTER_VERB[1] = verbosity
+    end
+    
+    #solve the system
+    tic = time()
+    clusters = Ccluster.clusterTriSys(initBox, prec)
+    ellapsedTime = time() - tic
+    
+    sumOfMults, solutions = constructOutput(clusters, prec)
+    
+    if verbosity == "brief" || verbosity == "results"
+        printBrief(stdout, sumOfMults, solutions, ellapsedTime)
+    end
+    if verbosity == "results"
+        printClusters(stdout, sumOfMults, solutions)
+    end
+    
+    return sumOfMults, solutions, ellapsedTime
+end
+
+function initializeGlobalVariables(polys)::Nothing
+    
+    global TCLUSTER_STRA, TCLUSTER_VERB
+    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
+    
+    empty!(TCLUSTER_CFEV)
+    push!(TCLUSTER_CFEV,Ccluster.algClus[])
+    
+    empty!(TCLUSTER_CLUS)
+    push!(TCLUSTER_CLUS, Array{Ccluster.algClus,1}[])
+    
+    empty!(TCLUSTER_POLS[1])
+    empty!(TCLUSTER_DEGS[1])
+    for index in 1:length(polys)
+        push!(TCLUSTER_POLS[1], deepcopy(polys[index]))
+        push!(TCLUSTER_CLUS[1], [])
+        push!(TCLUSTER_DEGS[1], Ccluster.getDeg(polys[index], index))
+    end
+    
+end
+
+function initializeInitialDomain(initBox::Array{Ccluster.box,1}, domain)::Bool
+    
+    if length(domain)==length(TCLUSTER_POLS[1])
+        for index in 1:length(domain)
+        
+            if typeof(domain[index])==Ccluster.box
+                btemp = Ccluster.box( domain[index] )
+            elseif typeof(domain[index])==Array{Nemo.fmpq,1}
+                btemp = Ccluster.box( domain[index][1],domain[index][2],domain[index][3] )
+                return false
+            else
+                print("bad type of domain[$(index)]: should be either Ccluster.box of Array{Nemo.fmpq,1}\n")
+            end
+            push!(initBox, btemp)
+        end
+    elseif length(domain)==1
+    
+        if typeof(domain[1])==Ccluster.box
+            btemp = Ccluster.box( domain[1] )
+        elseif typeof(domain[1])==Array{Nemo.fmpq,1}
+            btemp = Ccluster.box( domain[1][1],domain[1][2],domain[1][3] )
+        else
+            print("bad type of domain[1]: should be either Ccluster.box of Array{Nemo.fmpq,1}\n")
+            return false
+        end
+        
+        for index in 1:length(TCLUSTER_POLS[1])
+            push!(initBox, Ccluster.box(btemp))
+        end
+    else
+        print("bad length of domain: should be either 1 or $(TCLUSTER_POLS[1])\n")
+        return false
+    end
+    return true
+end
+
+function constructOutput(clusters::Array{Array{Ccluster.algClus,1},1}, prec::Int)
+
+    sumOfMults = 0
+    solutions=[]
+    
+    for index in 1:length(clusters)
+        mult = 1
+        mults = []
+        precs = []
+        for index2 in 1:length(clusters[index])
+#             print("mult: $(mult)\n")
+            mult=mult*clusters[index][index2]._nbSols
+            push!(mults, clusters[index][index2]._nbSols)
+            push!(precs, clusters[index][index2]._prec)
+        end
+        sumOfMults +=mult
+#         push!(solutions, [mult, clusters[index]])
+        push!(solutions, [mult, getApproximation(clusters[index],prec), mults, precs])
+    end
+    return sumOfMults, solutions
+    
+end
+
+function printBrief(out, sumOfMults, solutions, ellapsedTime)
+    write(out, "----------tcluster-------------------\n")
+    write(out, "time to solve the system: $ellapsedTime \n")
+    write(out, "number of clusters: $(length(solutions))\n")
+    write(out, "number of solutions: $(sumOfMults)\n")
+    write(out, "-------------------------------------\n")
+    return
+end
+
+function printClusters(out, sumOfMults, solutions)
+    write(out, "-------------------------------------\n")
+    for index in 1:length(solutions)
+        mult = solutions[index][1]
+        s = @sprintf("*** cluster with sum of multiplicity %4d *** \n", mult); write(out,s);
+        approx = solutions[index][2]
+        for index2 in 1:length(solutions[index][2])
+            nbSols    = solutions[index][3][index2]
+            clusprec  = solutions[index][4][index2]
+            s = @sprintf("---%2d-th comp: prec %4d, nbSols %4d, ", index2, clusprec, nbSols); write(out,s);
+            write(out, "$(approx[index2])\n");
+        end
+    end
+    write(out, "-------------------------------------\n")
+    return
+end
+
+function printClustersInFile(nameOutFile, sumOfMults, solutions, ellapsedTime)
+    open(nameOutFile, "w") do out
+        printBrief(out, sumOfMults, solutions, ellapsedTime)
+        printClusters(out, sumOfMults, solutions)
+    end
+    return
+end
 
 ### Main function
 function clusterTriSys(b::Array{Ccluster.box,1}, prec::Int)::Array{Array{Ccluster.algClus,1},1}
