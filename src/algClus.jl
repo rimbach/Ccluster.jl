@@ -99,12 +99,14 @@ function copyIn( dest::algClus, src::algClus )::Nothing
     bRe::Nemo.arb = Nemo.ball(R(Ccluster.getCenterRe(dest._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(dest._isolatingBox)))
     bIm::Nemo.arb = Nemo.ball(R(Ccluster.getCenterIm(dest._isolatingBox)), R(fmpq(1,2)*Ccluster.getWidth(dest._isolatingBox)))
     dest._approx = C(bRe, bIm);
+    return
 end
 
 function copyIn( dest::Array{algClus,1}, src::Array{algClus,1} )::Nothing
     for index in 1:length(src)
         copyIn( dest[index], src[index] )
     end
+    return
 end
 
 function clusCopy(a::algClus)::Ccluster.algClus
