@@ -37,6 +37,7 @@ include("connComp.jl")
 include("listConnComp.jl")
 include("disk.jl")
 include("algClus.jl")
+include("triangularSys.jl")
 
 __init__()
    
