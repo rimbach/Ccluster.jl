@@ -23,7 +23,6 @@ function getDeg(pol, ind::Int)::Array{Int,1} #get the vector of degrees of pol
                 push!(degrees,0)
             end
         else
-            global degrees
             degrees = getDeg( pol.coeffs[1], ind-1)
             for i = 2:d+1
                 degtemp::Array{Int,1} = getDeg( pol.coeffs[i], ind-1)
