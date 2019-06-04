@@ -41,12 +41,12 @@ end
 
 function evalUniFMPQPol(P::Nemo.fmpq_poly, b::Nemo.acb, prec::Int)::Nemo.acb
     CC::Nemo.AcbField = Nemo.ComplexField(prec)
-    R::Nemo.AcbPolyRing, dummy = Nemo.PolynomialRing(CC, "dummy")
+    R::Nemo.AcbPolyRing, dummy::acb_poly = Nemo.PolynomialRing(CC, "dummy")
     res::Nemo.acb_poly = R(0)
     ccall((:acb_poly_set_fmpq_poly, :libarb), 
       Cvoid, (Ref{acb_poly}, Ref{fmpq_poly}, Int), 
               res,           P,             prec)
-    return evaluate(res, CC(b))
+    return Nemo.evaluate(res, CC(b))
 end
     
 function evalPolAt(P, b::Array{Nemo.acb, 1}, prec::Int)::Nemo.acb
@@ -55,12 +55,12 @@ function evalPolAt(P, b::Array{Nemo.acb, 1}, prec::Int)::Nemo.acb
     else
         btemp::Nemo.acb=pop!(b)
         CC::Nemo.AcbField = Nemo.ComplexField(prec)
-        R::Nemo.AcbPolyRing, dummy = Nemo.PolynomialRing(CC, "dummy")
+        R::Nemo.AcbPolyRing, dummy::acb_poly = Nemo.PolynomialRing(CC, "dummy")
         pol::Nemo.acb_poly = R(0);
         for index=0:degree(P)
-            pol = pol + evalPolAt(coeff(P,index), b, prec)*dummy^index
+            pol = pol + evalPolAt(Nemo.coeff(P,index), b, prec)*dummy^index
         end
-        res::Nemo.acb = evaluate(pol, CC(btemp))
+        res::Nemo.acb = Nemo.evaluate(pol, CC(btemp))
         push!(b,btemp)
     end
     return res
@@ -69,7 +69,7 @@ end
 function getPolAt(P, b::Array{Nemo.acb, 1}, prec::Int)::Nemo.acb_poly
 #     print("--------------------------\n")
     CC::Nemo.AcbField = Nemo.ComplexField(prec)
-    R::Nemo.AcbPolyRing, dummy = Nemo.PolynomialRing(CC, "dummy")
+    R::Nemo.AcbPolyRing, dummy::acb_poly = Nemo.PolynomialRing(CC, "dummy")
     res::Nemo.acb_poly = R(0)
     for index=0:Nemo.degree(P)
         res = res + evalPolAt(Nemo.coeff(P,index), b, prec)*dummy^index
