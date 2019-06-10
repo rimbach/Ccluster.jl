@@ -35,17 +35,23 @@ if you use it in your research.
 
 ## Installation
 
-You can install it within Julia with:
+Enter the packages manager with
+```
+]
+```
+then
 
 ```
-] add https://github.com/rimbach/Ccluster.jl
+add https://github.com/rimbach/Ccluster.jl
 ```
 Ccluster depends on Nemo that will be automatically installed.
 
 For graphical outputs, install the package CclusterPlot with
 ```
-] add https://github.com/rimbach/CclusterPlot.jl
+add https://github.com/rimbach/CclusterPlot.jl
 ```
+in the packages manager.
+
 CclusterPlot depends on PyCall and PyPlot, and requires that matplotlib is installed
 on your system.
 It is heavy both to install and to load.
@@ -91,10 +97,11 @@ If you have installed CclusterPlot.jl, you can plot the clusters with:
 ```
 using CclusterPlot
 
-plotCcluster(Res, bInit, false)
+plotCcluster(Res, bInit, focus=false)
 ```
 The last argument is a flag telling the function wether to focus 
 on clusters (when *true*) or not (when *false*).
+You can also add 
 
 ### Other example: clustering the roots of a polynomial whose coefficients are roots of polynomials
 See the file examples/coeffsBernoulli.jl
