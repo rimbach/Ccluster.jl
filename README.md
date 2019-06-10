@@ -101,7 +101,8 @@ plotCcluster(Res, bInit, focus=false)
 ```
 The last argument is a flag telling the function wether to focus 
 on clusters (when *true*) or not (when *false*).
-You can also add 
+You can also add *markers=false* as an optional argument
+to avoid plotting approximations of the roots with markers.
 
 ### Other example: clustering the roots of a polynomial whose coefficients are roots of polynomials
 See the file examples/coeffsBernoulli.jl
