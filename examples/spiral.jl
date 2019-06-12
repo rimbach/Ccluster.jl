@@ -6,18 +6,30 @@ eps = fmpq(1,100)                       #eps = 1/100
 verbosity = 0                           #nothing printed
 
 degr=64
-function getApproximation( dest::Ptr{acb_poly}, prec::Int )
+function getApproximation( dest::Ptr{acb_poly}, precision::Int )
     
-    CC = ComplexField(prec)
-    R2, y = PolynomialRing(CC, "y")
-    res = R2(1)
-    for k=1:degr
-        modu = fmpq(k,degr)
-        argu = fmpq(4*k,degr)
-        root = modu*Nemo.exppii(CC(argu))
-        res = res * (y-root)
+    function getAppTemp( prec::Int )::Nemo.acb_poly
+        CC = ComplexField(prec)
+        R2, y = PolynomialRing(CC, "y")
+        res = R2(1)
+        for k=1:degr
+            modu = fmpq(k,degr)
+            argu = fmpq(4*k,degr)
+            root = modu*Nemo.exppii(CC(argu))
+            res = res * (y-root)
+        end
+        return res
     end
-    Ccluster.ptr_set_acb_poly(dest, res)
+    
+    precTemp::Int = 2*precision
+    poly = getAppTemp(precTemp)
+    
+    while Ccluster.checkAccuracy( poly, precision ) == 0
+            precTemp = 2*precTemp
+            poly = getAppTemp(precTemp)
+    end
+    
+    Ccluster.ptr_set_acb_poly(dest, poly)
 
 end
 

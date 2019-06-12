@@ -1,8 +1,9 @@
 module Ccluster
 
+VERSION >= v"0.4.0-dev+6521" && __precompile__()
 using Libdl
 
-using Nemo
+
 import Nemo: fmpq, acb_poly, fmpq_poly, QQ, prec, parent
 
 ###############################################################################
@@ -35,9 +36,6 @@ include("listBox.jl")
 include("connComp.jl")
 include("listConnComp.jl")
 include("disk.jl")
-include("algClus.jl")
-include("triangularSys.jl")
-include("Tcluster.jl")
 
 __init__()
    
@@ -51,6 +49,17 @@ function ptr_set_2fmpq_poly( dest::Ref{acb_poly}, re::fmpq_poly, im::fmpq_poly, 
     ccall((:acb_poly_set2_fmpq_poly, :libarb), Nothing,
                 (Ref{acb_poly}, Ref{fmpq_poly}, Ref{fmpq_poly}, Int), 
                  dest,         re,             im,        prec)
+end
+
+function checkAccuracy( pol::acb_poly, prec::Int )
+    
+    for i=0:degree(pol)
+        if Nemo.accuracy_bits( coeff(pol, i) ) < prec
+            return 0
+        end
+    end
+    return 1
+    
 end
 
 PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
