@@ -16,4 +16,4 @@ Res = ccluster(P, bInit, eps, verbosity)
 
 # using CclusterPlot #only if you have installed CclusterPlot.jl
 
-# plotCcluster(Res, bInit, false) #use true instead of false to focus on clusters
+# plotCcluster(Res, bInit, focus=false) #use true instead of false to focus on clusters

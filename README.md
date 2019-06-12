@@ -131,10 +131,10 @@ See the file examples/coeffsBernoulli.jl
 ```
 using Nemo
 
-R, x = PolynomialRing(Nemo.QQ, "x")
+RR, x = PolynomialRing(Nemo.QQ, "x")
 
 n = 64 #degree
-P = zero(R)
+P = zero(RR)
 bernoulli_cache(n)
 for k = 0:n
     global P
@@ -151,17 +151,32 @@ Coeffs = ccluster(P, bInit, eps, verbosity)
 ```
 #### Define an approximation function for the polynomial whose coefficients are the found roots
 ```
-function getApproximation( dest::Ptr{acb_poly}, prec::Int )
-    eps = fmpq(1, fmpz(2)^prec)
-    Qre = zero(R)
-    Qim = zero(R)
-    for i=1:n
-        btemp = [ Coeffs[i][2][1], Coeffs[i][2][2], 2*Coeffs[i][2][3] ]
-        temp = ccluster(P, btemp, eps, 0)
-        Qre = Qre + temp[1][2][1]*x^(i-1)
-        Qim = Qim + temp[1][2][2]*x^(i-1)
+function getApproximation( dest::Ptr{acb_poly}, precision::Int )
+
+    function getApp(prec::Int)::Nemo.acb_poly
+        eps = fmpq(1, fmpz(2)^prec)
+        R = Nemo.RealField(prec)
+        C = Nemo.ComplexField(prec)
+        CC, y = PolynomialRing(C, "y")
+        res = zero(CC)
+        for i=1:n
+            btemp = [ Coeffs[i][2][1], Coeffs[i][2][2], 2*Coeffs[i][2][3] ]
+            temp = ccluster(P, btemp, eps, 0)
+            approx::Nemo.acb = C( Nemo.ball(R(temp[1][2][1]),R(eps)), Nemo.ball(R(temp[1][2][2]),R(eps)))
+            res = res + approx*y^(i-1)
+        end
+        return res
     end
-    Ccluster.ptr_set_2fmpq_poly( dest, Qre, Qim, prec )
+    
+    precTemp::Int = 2*precision
+    poly = getApp(precTemp)
+    
+    while Ccluster.checkAccuracy( poly, precision ) == 0
+            precTemp = 2*precTemp
+            poly = getApp(precTemp)
+    end
+    
+    Ccluster.ptr_set_acb_poly(dest, poly)
 end
 ```
 #### Cluster the roots

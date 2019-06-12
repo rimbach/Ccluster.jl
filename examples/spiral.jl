@@ -26,7 +26,7 @@ function getApproximation( dest::Ptr{acb_poly}, precision::Int )
     
     while Ccluster.checkAccuracy( poly, precision ) == 0
             precTemp = 2*precTemp
-            poly = getAppTemp(precTemp)
+            poly = getAppSpiral(degr, precTemp)
     end
     
     Ccluster.ptr_set_acb_poly(dest, poly)
@@ -37,4 +37,4 @@ Res = ccluster(getApproximation, bInit, eps, verbosity)
 
 using CclusterPlot #only if you have installed CclusterPlot.jl
 
-plotCcluster(Res, bInit, false) #use true instead of false to focus on clusters
+plotCcluster(Res, bInit, focus=false) #use true instead of false to focus on clusters
