@@ -8,13 +8,13 @@ verbosity = 0                           #nothing printed
 degr=64
 function getApproximation( dest::Ptr{acb_poly}, precision::Int )
     
-    function getAppTemp( prec::Int )::Nemo.acb_poly
+    function getAppSpiral( degree::Int, prec::Int )::Nemo.acb_poly
         CC = ComplexField(prec)
         R2, y = PolynomialRing(CC, "y")
         res = R2(1)
-        for k=1:degr
-            modu = fmpq(k,degr)
-            argu = fmpq(4*k,degr)
+        for k=1:degree
+            modu = fmpq(k,degree)
+            argu = fmpq(4*k,degree)
             root = modu*Nemo.exppii(CC(argu))
             res = res * (y-root)
         end
@@ -22,7 +22,7 @@ function getApproximation( dest::Ptr{acb_poly}, precision::Int )
     end
     
     precTemp::Int = 2*precision
-    poly = getAppTemp(precTemp)
+    poly = getAppSpiral( degr, precTemp)
     
     while Ccluster.checkAccuracy( poly, precision ) == 0
             precTemp = 2*precTemp
