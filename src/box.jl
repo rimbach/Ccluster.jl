@@ -20,13 +20,9 @@ mutable struct box
     
     function box()
         z = new()
-#         ccall( (:compBox_init_forJulia, :libccluster), 
-#              Nothing, (Ref{box},), 
-#                     &z)
         ccall( (:compBox_init, :libccluster), 
              Nothing, (Ref{box},), 
                     z)
-#         finalizer(z, _box_clear_fn)
         finalizer(_box_clear_fn, z)
         return z
     end
@@ -40,7 +36,19 @@ mutable struct box
         ccall( (:compBox_set_3realRat, :libccluster), 
              Nothing, (Ref{box}, Ref{fmpq}, Ref{fmpq}, Ref{fmpq}), 
                     z,        re,      im,       width)
-#         finalizer(z, _box_clear_fn)
+        finalizer(_box_clear_fn, z)
+        return z
+    end
+    
+    function box(b::box)
+        z = new()
+        
+        ccall( (:compBox_init, :libccluster), 
+             Nothing, (Ref{box},), 
+                    z)
+        ccall( (:compBox_set, :libccluster), 
+             Nothing, (Ref{box}, Ref{box}), 
+                       z,        b)
         finalizer(_box_clear_fn, z)
         return z
     end

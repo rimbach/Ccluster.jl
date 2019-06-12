@@ -43,6 +43,10 @@ git-tree-sha1 = "4cc0a82d952bf7b7e73b7a010a37b944b91b8ad5"
 uuid = "2edaba10-b0f1-5616-af89-8c11ac63239a"
 version = "0.13.5"
 
+[[Printf]]
+deps = ["Unicode"]
+uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+
 [[Random]]
 deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
@@ -63,3 +67,6 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[Unicode]]
+uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"

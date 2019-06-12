@@ -1,9 +1,8 @@
 module Ccluster
 
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
 using Libdl
 
-
+using Nemo
 import Nemo: fmpq, acb_poly, fmpq_poly, QQ, prec, parent
 
 ###############################################################################
@@ -36,6 +35,9 @@ include("listBox.jl")
 include("connComp.jl")
 include("listConnComp.jl")
 include("disk.jl")
+include("algClus.jl")
+include("triangularSys.jl")
+include("Tcluster.jl")
 
 __init__()
    
