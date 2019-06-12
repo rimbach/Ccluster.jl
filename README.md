@@ -4,18 +4,23 @@ Ccluster.jl is a Julia wrapper for Ccluster (https://github.com/rimbach/Ccluster
 that implements a clustering algorithm for univariate polynomials whose
 coefficients are complex numbers.
 
+Ccluster.jl also provides a clustering function for triangular systems of polynomial
+equations.
+
 Ccluster.jl is compatible with julia >= 1.1.0.
 
-Branch compat-julia-v0.6 is compatible with julia 0.6, but is not intended to be maintained.
+The Branch compat-julia-v0.6 is compatible with julia 0.6, but is not intended to be maintained.
 
 ## Brief description
+
+### Univariate solver
 
 The main function provided by Ccluster.jl is **ccluster**.
 It takes as input
 a polynomial *P*, 
 a square complex box *B*, 
 a bound *eps*, 
-a strategy and
+<!-- a strategy and -->
 a verbosity flag.
 
 It outputs a set of *natural clusters* of roots together with the sum of multiplicities
@@ -24,7 +29,7 @@ A cluster is a complex disc *D* containing at least one root,
 and it is natural when *3D* contains the same roots
 than *D*.
 Each root of *P* in *B* is in exactly one cluster of the output, and clusters may contain
-roots of *P* in *2B*
+roots of *P* in *2B*.
 
 The implemented algorithm is described here:
 https://dl.acm.org/citation.cfm?id=2930939
@@ -32,6 +37,23 @@ https://dl.acm.org/citation.cfm?id=2930939
 Please cite:
 https://link.springer.com/chapter/10.1007/978-3-319-96418-8_28
 if you use it in your research.
+
+### Solver for triangular systems
+
+The notion of natural clusters is straightforwardly extended to the multivariate case.
+Our function **tcluster** (t for triangular)
+takes as input
+a triangular polynomial system *P*, 
+a vector of square complex boxes *B*, 
+and a bound *eps*.
+
+It outputs a set of *natural clusters* of solutions of P together with the sum of multiplicities
+of the solutions in each cluster.
+Each solution of *P* in *B* is in exactly one cluster of the output, and clusters may contain
+solutions of *P* in *2B*.
+
+The implemented algorithm is described here:
+https://arxiv.org/abs/1806.10164
 
 ## Installation
 
@@ -56,7 +78,7 @@ CclusterPlot depends on PyCall and PyPlot, and requires that matplotlib is insta
 on your system.
 It is heavy both to install and to load.
 
-## Usage
+## Usage: univariate solver
 
 ### Simple example: clustering the roots of a Mignotte-like polynomial
 See the file examples/mignotte.jl
