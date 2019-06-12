@@ -52,8 +52,8 @@ end
 
 function checkAccuracy( pol::acb_poly, prec::Int )
     
-    for i=0:Nemo.degree(pol)
-        if Nemo.accuracy_bits( Nemo.coeff(pol, i) ) < prec
+    for i=0:degree(pol)
+        if accuracy_bits( coeff(pol, i) ) < prec
             return 0
         end
     end
