@@ -1,10 +1,9 @@
 module Ccluster
 
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
 using Libdl
 
-
-import Nemo: fmpq, acb_poly, fmpq_poly, QQ, prec, parent
+import Nemo: fmpq, acb_poly, fmpq_poly, QQ, prec, parent,
+             degree, coeff, accuracy_bits
 
 ###############################################################################
 #

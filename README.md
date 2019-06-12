@@ -20,7 +20,6 @@ It takes as input
 a polynomial *P*, 
 a square complex box *B*, 
 a bound *eps*, 
-<!-- a strategy and -->
 a verbosity flag.
 
 It outputs a set of *natural clusters* of roots together with the sum of multiplicities
