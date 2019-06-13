@@ -9,6 +9,8 @@
 #  (at your option) any later version.  See <http://www.gnu.org/licenses/>.
 #
 
+using Nemo
+             
 mutable struct algClus                      # represents an algebraic cluster \alpha
     _nbSols::Int                            # the sum of multiplicity of roots in the cluster
     _prec::Int                              # the precision of the cluster; i.e. w() < 2*2^{-prec}
