@@ -260,3 +260,40 @@ The precision is an integer *p*. Ccluster computes clusters of size *eps=2^-p*.
 The last, optional, argument of ccluster is a verbosity flag.
 When no verbosity is given, ccluster is silent.
 Values can be "brief" and "results".
+
+## Usage: solver for triangular systems
+### Simple example: clustering the roots of a Mignotte-like polynomial
+See the file examples/triangularSys.jl
+```
+using Nemo
+using Ccluster
+
+Rx, x = PolynomialRing(QQ, "x") #Ring of polynomials in x with rational coefficients
+Syx, y = PolynomialRing(Rx, "y") #Ring of polynomials in y with coefficients that are in Rx
+
+d1=30
+c = 10
+delta=128
+d2=10
+
+twotodelta = fmpq(2,1)^(delta)
+f  = Rx( x^d1 - (twotodelta*x-1)^(c) )
+g = Syx( y^d2 - x^d2 )
+
+precision = 53
+bInitx = [fmpq(0,1),fmpq(0,1),fmpq(10,1)^40]
+
+nbSols, clusters, ellapsedTime = tcluster( [f,g], [bInitx], precision, verbosity = "silent" );
+```
+nbSols is the total number of solutions (counted with multiplicity),
+clusters is an array of clusters of solutions and
+ellapsedTime is the time spent to solve the system.
+
+Each element in clusters is an array which first element is the sum of multiplicities
+of the solution in the cluster and second element is a *precision*-bit approximation
+of the solutions (of type Nemo::acb).
+
+You can print the clusters with:
+```
+printClusters(stdout, nbSols, clusters)
+```

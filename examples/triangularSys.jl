@@ -21,3 +21,5 @@ nbSols, clusters, ellapsedTime = tcluster( [f,g], [bInitx], precision, verbosity
 print("time to solve the system: $ellapsedTime \n")
 print("number of clusters: $(length(clusters))\n")
 print("number of solutions: $(nbSols)\n")
+
+Ccluster.printClusters(stdout, nbSols, clusters)

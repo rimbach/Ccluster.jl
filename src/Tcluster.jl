@@ -12,7 +12,7 @@
 using Printf
 
 export TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS, TCLUSTER_STRA, TCLUSTER_VERB
-export tcluster, printClustersInFile
+export tcluster, printClusters, printClustersInFile
 
 # global variables
 TCLUSTER_POLS = [[]]
