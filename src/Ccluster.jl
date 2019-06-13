@@ -115,13 +115,16 @@ function ccluster( getApprox::Function,
     
     ccall( (:ccluster_interface_forJulia, :libccluster), 
              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
-                     lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+                     lccRes,           getApp_c,    initialBox,  eps,      strat, verbose )
+                     
     queueResults = []
+    
     while !isEmpty(lccRes)
         tempCC = pop(lccRes)
         tempBO = getComponentBox(tempCC,initBox)
         push!(queueResults, [getNbSols(tempCC),tempBO])
     end
+    
     return queueResults                                 
 end
 
