@@ -61,6 +61,18 @@ function checkAccuracy( pol::acb_poly, prec::Int )
     
 end
 
+function parseVerbosity( verbosity::String )::Int 
+    if verbosity=="silent"
+        return 0
+    else if verbosity=="brief"
+        return 1
+    else if verbosity=="results"
+        return 3
+    else
+        return 0
+    end
+end
+
 # PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
 # 
 # function getApp_FMPQ( dest::Ref{acb_poly}, prec::Int )
@@ -99,6 +111,8 @@ function ccluster( getApprox::Function,
                                        #options are "silent", "brief" and "results"
     getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     lccRes = listConnComp()
+    verbose::Int = parseVerbosity(verbosity)
+    
     ccall( (:ccluster_interface_forJulia, :libccluster), 
              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
