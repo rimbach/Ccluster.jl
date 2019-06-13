@@ -104,7 +104,7 @@ function ccluster( getApprox::Function,
 end
 
 function ccluster( getApprox::Function, 
-                   initialBox::box, 
+                   initBox::box, 
                    eps::fmpq;
                    strat=23, #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
@@ -115,7 +115,7 @@ function ccluster( getApprox::Function,
     
     ccall( (:ccluster_interface_forJulia, :libccluster), 
              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
-                     lccRes,           getApp_c,    initialBox,  eps,      strat, verbose )
+                     lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
                      
     queueResults = []
     
