@@ -212,20 +212,32 @@ function getApproximation( dest::Ptr{Nemo.acb_poly}, p::Int )
 ```
 Here is an example for a polynomial with complex coefficients (see also the file examples/spiral.jl)
 ```
-degr = 64
-
-function getApproximation( dest::Ptr{acb_poly}, prec::Int )
+degr=64
+function getApproximation( dest::Ptr{acb_poly}, precision::Int )
     
-    CC = ComplexField(prec)
-    R2, y = PolynomialRing(CC, "y")
-    res = R2(1)
-    for k=1:degr
-        modu = fmpq(k,degr)
-        argu = fmpq(4*k,degr)
-        root = modu*Nemo.exppii(CC(argu))
-        res = res * (y-root)
+    function getAppSpiral( degree::Int, prec::Int )::Nemo.acb_poly
+        CC = ComplexField(prec)
+        R2, y = PolynomialRing(CC, "y")
+        res = R2(1)
+        for k=1:degree
+            modu = fmpq(k,degree)
+            argu = fmpq(4*k,degree)
+            root = modu*Nemo.exppii(CC(argu))
+            res = res * (y-root)
+        end
+        return res
     end
-    Ccluster.ptr_set_acb_poly(dest, res)
+    
+    precTemp::Int = 2*precision
+    poly = getAppSpiral( degr, precTemp)
+    
+    while Ccluster.checkAccuracy( poly, precision ) == 0
+            precTemp = 2*precTemp
+            poly = getAppSpiral(degr, precTemp)
+    end
+    
+    Ccluster.ptr_set_acb_poly(dest, poly)
+
 end
 ```
 
