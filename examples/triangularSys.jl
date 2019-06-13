@@ -22,4 +22,4 @@ print("time to solve the system: $ellapsedTime \n")
 print("number of clusters: $(length(clusters))\n")
 print("number of solutions: $(nbSols)\n")
 
-Ccluster.printClusters(stdout, nbSols, clusters)
+printClusters(stdout, nbSols, clusters)
