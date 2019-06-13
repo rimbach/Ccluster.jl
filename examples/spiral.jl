@@ -2,7 +2,7 @@ using Nemo
 using Ccluster
 
 bInit = [fmpq(0,1),fmpq(0,1),fmpq(4,1)] #box centered in 0 + sqrt(-1)*0 with width 4
-eps = fmpq(1,100)                       #eps = 1/100
+precision = 53                          #get clusters of size 2^-53
 
 degr=64
 function getApproximation( dest::Ptr{acb_poly}, precision::Int )
@@ -32,7 +32,7 @@ function getApproximation( dest::Ptr{acb_poly}, precision::Int )
 
 end
 
-Res = ccluster(getApproximation, bInit, eps, verbosity="silent")
+Res = ccluster(getApproximation, bInit, precision, verbosity="silent")
 
 using CclusterPlot #only if you have installed CclusterPlot.jl
 

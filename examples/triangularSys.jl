@@ -13,10 +13,10 @@ twotodelta = fmpq(2,1)^(delta)
 f  = Rx( x^d1 - (twotodelta*x-1)^(c) )
 g = Syx( y^d2 - x^d2 )
 
-prec = 53
+precision = 53
 bInitx = [fmpq(0,1),fmpq(0,1),fmpq(10,1)^40]
 
-nbSols, clusters, ellapsedTime = tcluster( [f,g], [bInitx], prec, verbosity = "silent" );
+nbSols, clusters, ellapsedTime = tcluster( [f,g], [bInitx], precision, verbosity = "silent" );
 
 print("time to solve the system: $ellapsedTime \n")
 print("number of clusters: $(length(clusters))\n")

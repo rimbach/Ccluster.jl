@@ -9,9 +9,9 @@ P = x^d - 2*((2^a)*x-1)^2 #mignotte polynomial
 using Ccluster
 
 bInit = [fmpq(0,1),fmpq(0,1),fmpq(4,1)] #box centered in 0 + sqrt(-1)*0 with width 4
-eps = fmpq(1,100)                       #eps = 1/100
+precision = 53                          #get clusters of size 2^-53
 
-Res = ccluster(P, bInit, eps, verbosity="silent");
+Res = ccluster(P, bInit, precision, verbosity="silent");
 
 # using CclusterPlot #only if you have installed CclusterPlot.jl
 

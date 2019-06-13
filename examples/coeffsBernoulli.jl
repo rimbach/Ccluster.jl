@@ -47,9 +47,9 @@ function getApproximation( dest::Ptr{acb_poly}, precision::Int )
 end
 
 bInit = [fmpq(0,1),fmpq(0,1),fmpq(100,1)] #box centered in 0 + sqrt(-1)*0 with width 100
-eps = fmpq(1, 100)                      #eps = 1/100
+precision = 53                          #get clusters of size 2^-53
 verbosity = 0                           #nothing printed
-Roots = ccluster(getApproximation, bInit, eps, 1)
+Roots = ccluster(getApproximation, bInit, precision, verbosity="silent")
 
 using CclusterPlot #only if you have installed CclusterPlot.jl
 
