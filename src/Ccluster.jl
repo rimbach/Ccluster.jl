@@ -73,16 +73,6 @@ function parseVerbosity( verbosity::String )::Int
     end
 end
 
-PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
-
-function getApp_FMPQ( dest::Ref{acb_poly}, prec::Int )
-# function getApp_FMPQ( dest::acb_poly, prec::Int )
-#     ccall((:acb_poly_set_fmpq_poly, :libarb), Nothing,
-#                 (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
-    ccall((:acb_poly_set_fmpq_poly, :libarb), Cvoid,
-                (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
-end
-
 function ccluster( getApprox::Function, 
                    initialBox::Array{fmpq,1}, 
                    eps::fmpq;
@@ -172,68 +162,46 @@ function ccluster( P_FMPQ::fmpq_poly,
     return queueResults                                   
 end
 
-# function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly, 
-#                    initialBox::Array{fmpq,1}, 
-#                    eps::fmpq;
-#                    strat=23, #a strategy: Int
-#                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
-#                                        #options are "silent", "brief" and "results"
-#                                        
-# end
-
-function ccluster( P_FMPQ::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, verbose::Int)
+function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly, 
+                   initialBox::Array{fmpq,1}, 
+                   eps::fmpq;
+                   strat=23, #a strategy: Int
+                   verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
+                                       #options are "silent", "brief" and "results"
+      initBox::box = box(initialBox[1],initialBox[2],initialBox[3]); 
+      
+      queueResults = ccluster( Preal_FMPQ, Pimag_FMPQ, initBox, eps, strat=strat, verbosity=verbosity )
     
-    return ccluster( P_FMPQ, initialBox, eps, 23, verbose)
-    
+      for sol in queueResults
+          tempBO = sol[2]
+          sol[2] = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
+      end
+      
+      return queueResults                                      
 end
 
-function ccluster( P_FMPQ::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int)
-    
-    ccall((:fmpq_poly_set, :libflint), Nothing,
-                (Ref{fmpq_poly}, Ref{fmpq_poly}), PGLOBALCCLUSTERFMPQ, P_FMPQ)
-
-    return ccluster( getApp_FMPQ, initialBox, eps, strat, verbose)
-    
-end
-
-function ccluster( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, verbose::Int)
-    print(" WARNING: syntax ccluster( ::Function, ::Array{fmpq,1}, ::fmpq, verb::Int) is deprecated ")
-    print("             use ccluster( ::Function, ::Array{fmpq,1}, ::fmpq, verbosity=verb) instead ")
-    return ccluster( getApprox, initialBox, eps, 23, verbose)
-end
-
-function ccluster( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int)
-    print(" WARNING: syntax ccluster( ::Function, ::Array{fmpq,1}, ::fmpq, strat::Int, verb::Int) is deprecated ")
-    print("             use ccluster( ::Function, ::Array{fmpq,1}, ::fmpq, strategy=strat, verbosity=verb) instead ")
-    initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
-
-    queueResults = ccluster( getApprox, initBox, eps, strat, verbose )
-    
-    for sol in queueResults
-        tempBO = sol[2]
-        sol[2] = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
-    end
-    
-    return queueResults
-end
-
-function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, verbose::Int)
-    print(" WARNING: syntax ccluster( ::Function, ::box, ::fmpq, strat::Int, verb::Int) is deprecated ")
-    print("             use ccluster( ::Function, ::box, ::fmpq, strategy=strat, verbosity=verb) instead ")
-#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
-    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
+function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly, 
+                   initBox::box, 
+                   eps::fmpq;
+                   strat=23, #a strategy: Int
+                   verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
+                                       #options are "silent", "brief" and "results"
     lccRes = listConnComp()
-    ccall( (:ccluster_interface_forJulia, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
-                     lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+    verbose::Int = parseVerbosity(verbosity)
+    
+    ccall( (:ccluster_interface_forJulia_realRat_poly_real_imag, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Int,   Int), 
+                       lccRes,            Preal_FMPQ,     Pimag_FMPQ,     initBox,  eps,       strat, verbose )
+                     
     queueResults = []
+    
     while !isEmpty(lccRes)
         tempCC = pop(lccRes)
         tempBO = getComponentBox(tempCC,initBox)
         push!(queueResults, [getNbSols(tempCC),tempBO])
     end
-    return queueResults
     
+    return queueResults                                   
 end
 
 function ccluster_solve(getApprox::Function, 
@@ -354,37 +322,79 @@ end
 #     
 # end
 
-export ccluster
+#DEPRECATED interfaces
 
-# POLY_GLOBAL = fmpq_poly()
-# 
-# function GETAPP_GLOBAL( dest::Ref{acb_poly}, prec::Int )
+PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
+
+function getApp_FMPQ( dest::Ref{acb_poly}, prec::Int )
+# function getApp_FMPQ( dest::acb_poly, prec::Int )
 #     ccall((:acb_poly_set_fmpq_poly, :libarb), Nothing,
-#                 (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest,  POLY_GLOBAL, prec)
-# end
-# 
-# function Ccluster( poly::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
-#     
-#     POLY_GLOBAL = poly
-#     
-#     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
-#     const getApp_c = cfunction(GETAPP_GLOBAL, Nothing, (Ref{acb_poly}, Int))
-#     
-#     lccRes = listConnComp()
-#     
-#     ccall( (:ccluster_interface_forJulia, :libccluster), 
-#              Nothing, (Ref{listConnComp}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
-#                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
-#      
-#      
-#     queueResults::Array{Array{fmpq,1},1} = []
-#     while !isEmpty(lccRes)
-#         temp = getComponentBox(pop(lccRes),initBox)
-#         push!(queueResults, [getCenterRe(temp),getCenterIm(temp),fmpq(3,4)*getWidth(temp)])
-#     end
-#     
-#     return queueResults
-#     
-# end  
+#                 (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
+    ccall((:acb_poly_set_fmpq_poly, :libarb), Cvoid,
+                (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
+end
+
+function ccluster( P_FMPQ::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, verbose::Int)
+    
+    print(" WARNING: syntax ccluster( ::fmpq_poly, ::box, ::fmpq, verb::Int) is deprecated\n")
+    print("             use ccluster( ::fmpq_poly, ::box, ::fmpq, verbosity=verb) instead\n")
+    
+    return ccluster( P_FMPQ, initialBox, eps, 23, verbose)
+    
+end
+
+function ccluster( P_FMPQ::fmpq_poly, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int)
+    
+    print(" WARNING: syntax ccluster( ::fmpq_poly, ::box, ::fmpq, strat::Int, verb::Int) is deprecated\n")
+    print("             use ccluster( ::fmpq_poly, ::box, ::fmpq, strategy=strat, verbosity=verb) instead\n")
+    
+    ccall((:fmpq_poly_set, :libflint), Nothing,
+                (Ref{fmpq_poly}, Ref{fmpq_poly}), PGLOBALCCLUSTERFMPQ, P_FMPQ)
+
+    return ccluster( getApp_FMPQ, initialBox, eps, strat, verbose)
+    
+end
+
+function ccluster( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, verbose::Int)
+    print(" WARNING: syntax ccluster( ::Function, ::Array{fmpq,1}, ::fmpq, verb::Int) is deprecated\n")
+    print("             use ccluster( ::Function, ::Array{fmpq,1}, ::fmpq, verbosity=verb) instead\n")
+    return ccluster( getApprox, initialBox, eps, 23, verbose)
+end
+
+function ccluster( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int)
+    print(" WARNING: syntax ccluster( ::Function, ::Array{fmpq,1}, ::fmpq, strat::Int, verb::Int) is deprecated\n")
+    print("             use ccluster( ::Function, ::Array{fmpq,1}, ::fmpq, strategy=strat, verbosity=verb) instead\n")
+    initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
+
+    queueResults = ccluster( getApprox, initBox, eps, strat, verbose )
+    
+    for sol in queueResults
+        tempBO = sol[2]
+        sol[2] = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
+    end
+    
+    return queueResults
+end
+
+function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, verbose::Int)
+    print(" WARNING: syntax ccluster( ::Function, ::box, ::fmpq, strat::Int, verb::Int) is deprecated\n")
+    print("             use ccluster( ::Function, ::box, ::fmpq, strategy=strat, verbosity=verb) instead\n")
+#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
+    lccRes = listConnComp()
+    ccall( (:ccluster_interface_forJulia, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
+                     lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+    queueResults = []
+    while !isEmpty(lccRes)
+        tempCC = pop(lccRes)
+        tempBO = getComponentBox(tempCC,initBox)
+        push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    return queueResults
+    
+end
+
+export ccluster 
 
 end # module
