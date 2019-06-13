@@ -73,15 +73,15 @@ function parseVerbosity( verbosity::String )::Int
     end
 end
 
-# PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
-# 
-# function getApp_FMPQ( dest::Ref{acb_poly}, prec::Int )
-# # function getApp_FMPQ( dest::acb_poly, prec::Int )
-# #     ccall((:acb_poly_set_fmpq_poly, :libarb), Nothing,
-# #                 (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
-#     ccall((:acb_poly_set_fmpq_poly, :libarb), Cvoid,
+PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
+
+function getApp_FMPQ( dest::Ref{acb_poly}, prec::Int )
+# function getApp_FMPQ( dest::acb_poly, prec::Int )
+#     ccall((:acb_poly_set_fmpq_poly, :libarb), Nothing,
 #                 (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
-# end
+    ccall((:acb_poly_set_fmpq_poly, :libarb), Cvoid,
+                (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
+end
 
 function ccluster( getApprox::Function, 
                    initialBox::Array{fmpq,1}, 
@@ -148,7 +148,7 @@ function ccluster( P_FMPQ::fmpq_poly,
 end
 
 function ccluster( P_FMPQ::fmpq_poly, 
-                   initBox::Array{fmpq,1}, 
+                   initBox::box, 
                    eps::fmpq;
                    strat=23, #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
