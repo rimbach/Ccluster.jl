@@ -64,9 +64,9 @@ end
 function parseVerbosity( verbosity::String )::Int 
     if verbosity=="silent"
         return 0
-    else if verbosity=="brief"
+    elseif verbosity=="brief"
         return 1
-    else if verbosity=="results"
+    elseif verbosity=="results"
         return 3
     else
         return 0
