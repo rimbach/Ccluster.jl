@@ -33,12 +33,16 @@ function tcluster( polys,  #an array of pols
     global TCLUSTER_STRA, TCLUSTER_VERB
     global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
 
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster: begin\n"
+    end
+    
     Ccluster.initializeGlobalVariables(polys)
     
     #construct the initial domain
     initBox::Array{Ccluster.box,1}=[]
     if !initializeInitialDomain(initBox, domain)
-        return -1, []
+        return -1, [], 0.0
     end
     
     TCLUSTER_STRA[1] = strat
@@ -49,18 +53,34 @@ function tcluster( polys,  #an array of pols
         TCLUSTER_VERB[1] = verbosity
     end
     
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster: initialization OK\n"
+    end
+    
     #solve the system
     tic = time()
     clusters = Ccluster.clusterTriSys(initBox, prec)
     ellapsedTime = time() - tic
     
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster: solving OK\n"
+    end
+    
     sumOfMults, solutions = constructOutput(clusters, prec)
+    
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster: construction output OK\n"
+    end
     
     if verbosity == "brief" || verbosity == "results"
         printBrief(stdout, sumOfMults, solutions, ellapsedTime)
     end
     if verbosity == "results"
         printClusters(stdout, sumOfMults, solutions)
+    end
+    
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster: end\n"
     end
     
     return sumOfMults, solutions, ellapsedTime
