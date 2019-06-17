@@ -34,7 +34,7 @@ function tcluster( polys,  #an array of pols
     global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
 
     if verbosity=="debug"
-        print("tcluster.jl, tcluster: begin\n"
+        print("tcluster.jl, tcluster: begin\n")
     end
     
     Ccluster.initializeGlobalVariables(polys)
