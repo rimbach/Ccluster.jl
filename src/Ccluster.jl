@@ -79,7 +79,7 @@ end
 function ccluster( getApprox::Function, 
                    initialBox::Array{fmpq,1}, 
                    precision::Int;
-                   strat=23, #a strategy: Int
+                   strat=55, #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
       
@@ -99,7 +99,7 @@ end
 function ccluster( getApprox::Function, 
                    initBox::box, 
                    precision::Int;
-                   strat=23, #a strategy: Int
+                   strat=55, #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
     getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
@@ -125,7 +125,7 @@ end
 function ccluster( P_FMPQ::fmpq_poly, 
                    initialBox::Array{fmpq,1}, 
                    precision::Int;
-                   strat=23, #a strategy: Int
+                   strat=55, #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
                                     
@@ -144,7 +144,7 @@ end
 function ccluster( P_FMPQ::fmpq_poly, 
                    initBox::box, 
                    precision::Int;
-                   strat=23, #a strategy: Int
+                   strat=55, #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
      
@@ -170,7 +170,7 @@ end
 function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly, 
                    initialBox::Array{fmpq,1}, 
                    precision::Int;
-                   strat=23, #a strategy: Int
+                   strat=55, #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
       initBox::box = box(initialBox[1],initialBox[2],initialBox[3]); 
@@ -188,7 +188,7 @@ end
 function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly, 
                    initBox::box, 
                    precision::Int;
-                   strat=23, #a strategy: Int
+                   strat=55, #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
     lccRes = listConnComp()
