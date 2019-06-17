@@ -54,7 +54,7 @@ function tcluster( polys,  #an array of pols
     end
     
     if verbosity=="debug"
-        print("tcluster.jl, tcluster: initialization OK\n"
+        print("tcluster.jl, tcluster: initialization OK\n")
     end
     
     #solve the system
@@ -63,13 +63,13 @@ function tcluster( polys,  #an array of pols
     ellapsedTime = time() - tic
     
     if verbosity=="debug"
-        print("tcluster.jl, tcluster: solving OK\n"
+        print("tcluster.jl, tcluster: solving OK\n")
     end
     
     sumOfMults, solutions = constructOutput(clusters, prec)
     
     if verbosity=="debug"
-        print("tcluster.jl, tcluster: construction output OK\n"
+        print("tcluster.jl, tcluster: construction output OK\n")
     end
     
     if verbosity == "brief" || verbosity == "results"
@@ -80,7 +80,7 @@ function tcluster( polys,  #an array of pols
     end
     
     if verbosity=="debug"
-        print("tcluster.jl, tcluster: end\n"
+        print("tcluster.jl, tcluster: end\n")
     end
     
     return sumOfMults, solutions, ellapsedTime
