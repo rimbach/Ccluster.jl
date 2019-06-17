@@ -72,7 +72,7 @@ function tcluster( polys,  #an array of pols
         print("tcluster.jl, tcluster: construction output OK\n")
     end
     
-    if verbosity == "brief" || verbosity == "results"
+    if verbosity == "brief" || verbosity == "results" || verbosity == "debug"
         printBrief(stdout, sumOfMults, solutions, ellapsedTime)
     end
     if verbosity == "results"
@@ -116,9 +116,9 @@ function initializeInitialDomain(initBox::Array{Ccluster.box,1}, domain)::Bool
                 btemp = Ccluster.box( domain[index] )
             elseif typeof(domain[index])==Array{Nemo.fmpq,1}
                 btemp = Ccluster.box( domain[index][1],domain[index][2],domain[index][3] )
-                return false
             else
                 print("bad type of domain[$(index)]: should be either Ccluster.box of Array{Nemo.fmpq,1}\n")
+                return false
             end
             push!(initBox, btemp)
         end
