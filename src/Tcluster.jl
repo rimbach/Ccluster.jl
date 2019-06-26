@@ -74,6 +74,7 @@ function tcluster( polys,  #an array of pols
     
     if verbosity == "brief" || verbosity == "results" || verbosity == "debug"
         printBrief(stdout, sumOfMults, solutions, ellapsedTime)
+        print("TIMEINGETPOLAT: $(TIMEINGETPOLAT[1])\n")
     end
     if verbosity == "results"
         printClusters(stdout, sumOfMults, solutions)
@@ -90,6 +91,9 @@ function initializeGlobalVariables(polys)::Nothing
     
     global TCLUSTER_STRA, TCLUSTER_VERB
     global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
+    
+    global TIMEINGETPOLAT
+    TIMEINGETPOLAT[1]=0.
     
     empty!(TCLUSTER_CFEV)
     push!(TCLUSTER_CFEV,Ccluster.algClus[])

@@ -12,6 +12,10 @@
 # utility functions for triangular systems
 #
 
+export TIMEINGETPOLAT
+
+TIMEINGETPOLAT = [0.];
+
 function getDeg(pol, ind::Int)::Array{Int,1} #get the vector of degrees of pol
     if ind==1
         return [Nemo.degree(pol)]
@@ -67,6 +71,7 @@ end
 
 function getPolAt(P, b::Array{Nemo.acb, 1}, prec::Int)::Nemo.acb_poly
 #     print("--------------------------\n")
+    tic=time()
     CC::Nemo.AcbField = Nemo.ComplexField(prec)
     R::Nemo.AcbPolyRing, dummy::acb_poly = Nemo.PolynomialRing(CC, "dummy")
     res::Nemo.acb_poly = R(0)
@@ -76,5 +81,7 @@ function getPolAt(P, b::Array{Nemo.acb, 1}, prec::Int)::Nemo.acb_poly
 #     print("--------------------------\n")
 #     print("res $(length(b)): $res\n")
 #     print("--------------------------\n")
+    global TIMEINGETPOLAT
+    TIMEINGETPOLAT[1] = TIMEINGETPOLAT[1] + (time()-tic)
     return res
 end
