@@ -78,7 +78,12 @@ function getPolAt(P, b::Array{Nemo.acb, 1}, prec::Int)::Nemo.acb_poly
     for index=0:Nemo.degree(P)
         res = res + evalPolAt(Nemo.coeff(P,index), b, prec)*dummy^index
     end
-#     print("--------------------------\n")
+    print("--------------------------\n")
+    print("arguments: ")
+    for i=1:length(b)
+        print("$(b[i]), ");
+    end
+    print("\n")
 #     print("res $(length(b)): $res\n")
 #     print("--------------------------\n")
     global TIMEINGETPOLAT
