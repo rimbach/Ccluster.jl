@@ -11,6 +11,9 @@
 
 using Printf
 
+import Nemo: fmpz, fmpq, acb, acb_poly, fmpq_poly, degree, ArbField, AcbField, RealField, ComplexField, 
+             AcbPolyRing, PolynomialRing, evaluate, coeff
+             
 export TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS, TCLUSTER_STRA, TCLUSTER_VERB
 export tcluster, printClusters, printClustersInFile
 
@@ -19,6 +22,7 @@ TCLUSTER_POLS = [[]]
 TCLUSTER_CFEV = []
 TCLUSTER_CLUS = [[]]
 TCLUSTER_DEGS = [[]]
+TCLUSTER_PREC = [[]]
 TCLUSTER_STRA = [55] 
 TCLUSTER_VERB = [0] 
 
@@ -31,13 +35,15 @@ function tcluster( polys,  #an array of pols
                                        #options are "silent", "results" 
                    
     global TCLUSTER_STRA, TCLUSTER_VERB
-    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
+    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS, TCLUSTER_PREC
 
     if verbosity=="debug"
         print("tcluster.jl, tcluster: begin\n")
     end
     
-    Ccluster.initializeGlobalVariables(polys)
+    tic = time()
+    
+    Ccluster.initializeGlobalVariables(polys, prec, verbosity)
     
     #construct the initial domain
     initBox::Array{Ccluster.box,1}=[]
@@ -58,7 +64,6 @@ function tcluster( polys,  #an array of pols
     end
     
     #solve the system
-    tic = time()
     clusters = Ccluster.clusterTriSys(initBox, prec)
     ellapsedTime = time() - tic
     
@@ -74,7 +79,7 @@ function tcluster( polys,  #an array of pols
     
     if verbosity == "brief" || verbosity == "results" || verbosity == "debug"
         printBrief(stdout, sumOfMults, solutions, ellapsedTime)
-        print("TIMEINGETPOLAT: $(TIMEINGETPOLAT[1])\n")
+#         print("TIMEINGETPOLAT: $(TIMEINGETPOLAT[1])\n")
     end
     if verbosity == "results"
         printClusters(stdout, sumOfMults, solutions)
@@ -87,13 +92,13 @@ function tcluster( polys,  #an array of pols
     return sumOfMults, solutions, ellapsedTime
 end
 
-function initializeGlobalVariables(polys)::Nothing
+function initializeGlobalVariables(polys, prec::Int, verbosity)::Nothing
     
     global TCLUSTER_STRA, TCLUSTER_VERB
-    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
+    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS, TCLUSTER_PREC
     
-    global TIMEINGETPOLAT
-    TIMEINGETPOLAT[1]=0.
+#     global TIMEINGETPOLAT
+#     TIMEINGETPOLAT[1]=0.
     
     empty!(TCLUSTER_CFEV)
     push!(TCLUSTER_CFEV,Ccluster.algClus[])
@@ -103,12 +108,32 @@ function initializeGlobalVariables(polys)::Nothing
     
     empty!(TCLUSTER_POLS[1])
     empty!(TCLUSTER_DEGS[1])
+    empty!(TCLUSTER_PREC[1])
     for index in 1:length(polys)
         push!(TCLUSTER_POLS[1], deepcopy(polys[index]))
         push!(TCLUSTER_CLUS[1], [])
         push!(TCLUSTER_DEGS[1], Ccluster.getDeg(polys[index], index))
+        push!(TCLUSTER_PREC[1], prec)
+        if verbosity=="debug"
+            print("poly $index, degrees: $(TCLUSTER_DEGS[1][index])\n")
+        end
     end
     
+    #initialize TCLUSTER_PREC
+    index::Int = length(polys)
+    while index > 1
+        index2::Int = index-1
+        while index2>=1
+            if TCLUSTER_DEGS[1][index][index2]>=1
+                TCLUSTER_PREC[1][index2] = TCLUSTER_PREC[1][index2]*2
+            end
+            index2 = index2-1
+        end
+        index = index -1
+    end
+    if verbosity=="debug"
+        print("precs: $(TCLUSTER_PREC[1])\n")
+    end
 end
 
 function initializeInitialDomain(initBox::Array{Ccluster.box,1}, domain)::Bool
@@ -118,10 +143,10 @@ function initializeInitialDomain(initBox::Array{Ccluster.box,1}, domain)::Bool
         
             if typeof(domain[index])==Ccluster.box
                 btemp = Ccluster.box( domain[index] )
-            elseif typeof(domain[index])==Array{Nemo.fmpq,1}
+            elseif typeof(domain[index])==Array{fmpq,1}
                 btemp = Ccluster.box( domain[index][1],domain[index][2],domain[index][3] )
             else
-                print("bad type of domain[$(index)]: should be either Ccluster.box of Array{Nemo.fmpq,1}\n")
+                print("bad type of domain[$(index)]: should be either Ccluster.box of Array{fmpq,1}\n")
                 return false
             end
             push!(initBox, btemp)
@@ -130,10 +155,10 @@ function initializeInitialDomain(initBox::Array{Ccluster.box,1}, domain)::Bool
     
         if typeof(domain[1])==Ccluster.box
             btemp = Ccluster.box( domain[1] )
-        elseif typeof(domain[1])==Array{Nemo.fmpq,1}
+        elseif typeof(domain[1])==Array{fmpq,1}
             btemp = Ccluster.box( domain[1][1],domain[1][2],domain[1][3] )
         else
-            print("bad type of domain[1]: should be either Ccluster.box of Array{Nemo.fmpq,1}\n")
+            print("bad type of domain[1]: should be either Ccluster.box of Array{fmpq,1}\n")
             return false
         end
         
@@ -208,19 +233,21 @@ end
 function clusterTriSys(b::Array{Ccluster.box,1}, prec::Int)::Array{Array{Ccluster.algClus,1},1}
 
     global TCLUSTER_STRA, TCLUSTER_VERB
-    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
+    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS, TCLUSTER_PREC
     
     actualPol::Int = length(b)
     
     if actualPol==1 #terminal case
-        clusters::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPol(b[1], prec)
+#         clusters::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPol(b[1], prec)
+        clusters::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPol(b[1], TCLUSTER_PREC[1][actualPol])
     else            #other cases
         btemp::Ccluster.box = pop!(b)
         clusterstemp::Array{Array{Ccluster.algClus,1},1} = clusterTriSys( b, prec )
         clusters=[]
         while length(clusterstemp)>0
             clus::Array{Ccluster.algClus,1}=pop!(clusterstemp)
-            clusterstemp2::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPolInFiber(clus, btemp, prec)
+#             clusterstemp2::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPolInFiber(clus, btemp, prec)
+            clusterstemp2::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPolInFiber(clus, btemp, TCLUSTER_PREC[1][actualPol])
             while length(clusterstemp2)>0
                 push!(clusters, pop!(clusterstemp2))
             end
@@ -250,7 +277,7 @@ function clusterPol(b::Ccluster.box, prec::Int)::Array{Array{Ccluster.algClus,1}
     
     TCLUSTER_CFEV[1]=[]
     clusters=Array{Ccluster.algClus,1}[]
-    eps = Nemo.fmpq(1, Nemo.fmpz(2)^(prec-1))
+    eps = fmpq(1, fmpz(2)^(prec-1))
     
 #     qRes::Ccluster.listConnComp = Ccluster.ccluster_solve(getAppSys, b, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
     qRes::Ccluster.listConnComp = Ccluster.ccluster_solve(getAppFirst, b, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
@@ -313,7 +340,7 @@ function clusterPolInFiber(a::Array{Ccluster.algClus,1}, b::Ccluster.box, prec::
         
         c::Array{Ccluster.algClus,1} = pop!(TCLUSTER_CLUS[1][actualPol-1])
         TCLUSTER_CFEV[1] = c
-        eps::Nemo.fmpq = Nemo.fmpq(1, Nemo.fmpz(2)^(prec-1))
+        eps::fmpq = fmpq(1, fmpz(2)^(prec-1))
         
         qRes::Ccluster.listConnComp = Ccluster.ccluster_solve(getAppSys, b, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
         c = TCLUSTER_CFEV[1]
@@ -418,14 +445,12 @@ function getAppSys( dest::Ptr{acb_poly}, prec::Int )::Cvoid
             
         end
         
-        approx::Array{Nemo.acb,1} = Ccluster.getApproximation(TCLUSTER_CFEV[1],prec)
-        
-        Ptemp2::Nemo.acb_poly = Ccluster.getPolAt(Ptemp,approx,prec)
-        
-#         print("actualPol: $actualPol, Ptemp: $Ptemp \n\n")
+        approx::Array{acb,1} = Ccluster.getApproximation(TCLUSTER_CFEV[1],prec)
+        Ptemp2::acb_poly = Ccluster.getPolAtHorner(Ptemp,approx,prec)
         
         ccall((:acb_poly_set, :libarb), 
             Cvoid, (Ptr{acb_poly}, Ref{acb_poly}, Int), 
                    dest,          Ptemp2,         prec)
+                   
     end   
 end

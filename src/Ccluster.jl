@@ -1,9 +1,13 @@
+__precompile__()
+
 module Ccluster
 
 using Libdl
 
 import Nemo: fmpq, fmpz, acb_poly, fmpq_poly, QQ, prec, parent,
              degree, coeff, accuracy_bits
+
+
 
 ###############################################################################
 #
@@ -25,9 +29,9 @@ function __init__()
     else
         push!(Libdl.DL_LOAD_PATH, libdir)
    end
-    println("")
-    println("Welcome to Ccluster version 0.0.1")
-    println("")
+#     println("")
+#     println("Welcome to Ccluster version 0.0.1")
+#     println("")
 end
 
 include("box.jl")
@@ -61,6 +65,17 @@ function checkAccuracy( pol::acb_poly, prec::Int )
         end
     end
     return 1
+    
+end
+
+function getAccuracy( pol::acb_poly )::Int
+    res::Int = accuracy_bits( coeff(pol, 0) )
+    for i=1:degree(pol)
+        if accuracy_bits( coeff(pol, i) ) < res
+            res = accuracy_bits( coeff(pol, i) )
+        end
+    end
+    return res
     
 end
 
