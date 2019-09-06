@@ -114,7 +114,7 @@ end
 
 function setAppPr(cc::connComp, nAppPr::Int)
     res = ccall( (:connCmp_set_appPr, :libccluster),
-                 Nothing, (Ref{connComp}, CInt),
+                 Nothing, (Ref{connComp}, Cint),
                            cc,            nAppPr)
     return
 end
