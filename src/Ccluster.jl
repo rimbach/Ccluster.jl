@@ -319,7 +319,7 @@ function ccluster_draw( getApprox::Function,
                                             #options are "silent", "brief" and "results"
     
     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
-    const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
     verbose::Int = parseVerbosity(verbosity)
     eps = fmpq(1, fmpz(2)^precision)
