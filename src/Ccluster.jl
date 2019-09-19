@@ -311,37 +311,45 @@ function ccluster_DAC_next(qRes::listConnComp,
     
 end
 
-# function ccluster_draw( getApprox::Function, initialBox::Array{fmpq,1}, eps::fmpq, strat::Int, verbose::Int = 0 )
-#     
-#     initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
-#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
-#     
-#     lccRes = listConnComp()
-#     lcbDis = listBox()
-#     
-#     ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
-#              Nothing, (Ref{listConnComp},Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
-#                      lccRes,  lcbDis,          getApp_c,    initBox,  eps,      strat, verbose )
-#      
-#     queueResults = []
-#     while !isEmpty(lccRes)
-#         tempCC = pop(lccRes)
-# #         tempBO = getComponentBox(tempCC,initBox)
-# #         push!(queueResults, [getNbSols(tempCC),[getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]])
-#         push!(queueResults, tempCC)
-#     end
-#     
-#     queueDiscarded = []
-#     while !isEmpty(lcbDis)
-#         tempB = pop(lcbDis)
-#         push!(queueDiscarded, tempB)
-# #         push!(queueDiscarded, [getCenterRe(tempB), getCenterIm(tempB), getWidth(tempB)])
-# #         push!(queueDiscarded, [getCenterIm(tempB)])
-#     end
-#     
-#     return queueResults, queueDiscarded
-#     
-# end
+function ccluster_draw( getApprox::Function, 
+                        initialBox::Array{fmpq,1}, 
+                        precision::Int;
+                        strat=55, #a strategy: Int
+                        verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
+                                            #options are "silent", "brief" and "results"
+    
+    initBox::box = box(initialBox[1],initialBox[2],initialBox[3])
+    const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+    
+    verbose::Int = parseVerbosity(verbosity)
+    eps = fmpq(1, fmpz(2)^precision)
+    
+    lccRes = listConnComp()
+    lcbDis = listBox()
+    
+    ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
+             Nothing, (Ref{listConnComp},Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
+                     lccRes,  lcbDis,          getApp_c,    initBox,  eps,      strat, verbose )
+     
+    queueResults = []
+    while !isEmpty(lccRes)
+        tempCC = pop(lccRes)
+#         tempBO = getComponentBox(tempCC,initBox)
+#         push!(queueResults, [getNbSols(tempCC),[getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]])
+        push!(queueResults, tempCC)
+    end
+    
+    queueDiscarded = []
+    while !isEmpty(lcbDis)
+        tempB = pop(lcbDis)
+        push!(queueDiscarded, tempB)
+#         push!(queueDiscarded, [getCenterRe(tempB), getCenterIm(tempB), getWidth(tempB)])
+#         push!(queueDiscarded, [getCenterIm(tempB)])
+    end
+    
+    return queueResults, queueDiscarded
+    
+end
 
 #DEPRECATED interfaces
 
