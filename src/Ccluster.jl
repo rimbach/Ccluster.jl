@@ -324,13 +324,15 @@ function ccluster_draw( getApprox::Function,
     verbose::Int = parseVerbosity(verbosity)
     eps = fmpq(1, fmpz(2)^precision)
     
+    print("ici\n")
     lccRes = listConnComp()
     lcbDis = listBox()
-    
+    print("ici ici\n")
     ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
              Nothing, (Ref{listConnComp},Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
                      lccRes,  lcbDis,          getApp_c,    initBox,  eps,      strat, verbose )
-     
+    
+    print("ici ici ici\n")
     queueResults = []
     while !isEmpty(lccRes)
         tempCC = pop(lccRes)
