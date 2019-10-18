@@ -23,15 +23,15 @@ TCLUSTER_CFEV = []
 TCLUSTER_CLUS = [[]]
 TCLUSTER_DEGS = [[]]
 TCLUSTER_PREC = [[]]
-TCLUSTER_STRA = [55] 
+TCLUSTER_STRA = ["default"] 
 TCLUSTER_VERB = [0] 
 
 ### interface
 function tcluster( polys,  #an array of pols
                    domain, #an array of Ccluster.box, possibly of length 1
                    prec;   #a precision: Int
-                   strat=55,  #a strategy: Int
-                   verbosity="brief" ) #a verbosity flag; by defaults, a brief summary
+                   strategy::String="default",  #a strategy: Int
+                   verbosity::String="brief" ) #a verbosity flag; by defaults, a brief summary
                                        #options are "silent", "results" 
                    
     global TCLUSTER_STRA, TCLUSTER_VERB
@@ -51,7 +51,7 @@ function tcluster( polys,  #an array of pols
         return -1, [], 0.0
     end
     
-    TCLUSTER_STRA[1] = strat
+    TCLUSTER_STRA[1] = strategy
     
     if typeof(verbosity) == String
         TCLUSTER_VERB[1] = 0

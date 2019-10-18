@@ -321,16 +321,19 @@ end
 function ccluster_solve(getApprox::Function, 
                         initBox::box, 
                         eps::fmpq, 
-                        strat::Int, 
+                        strategy::String, 
                         verbose::Int)
-    
-#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+
     getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
     lccRes = listConnComp()
-    ccall( (:ccluster_interface_forJulia, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
-                     lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+#     ccall( (:ccluster_interface_forJulia, :libccluster), 
+#              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+                     
+        ccall( (:ccluster_forJulia_func, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int, Int), 
+                       lccRes,            getApp_c,   initBox,  eps,       strategy, 1,   verbose )
     
     return lccRes
     
@@ -342,15 +345,18 @@ function ccluster_refine(qRes::listConnComp,
                          CC::listConnComp, 
                          initBox::box,
                          eps::fmpq, 
-                         strat::Int, 
+                         strategy::String, 
                          verbose::Int = 0 )
     
-#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
     getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
-    ccall( (:ccluster_refine_forJulia, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Int,   Int), 
-                     qRes,              CC,               getApp_c,   initBox,  eps,      strat, verbose )
+#     ccall( (:ccluster_refine_forJulia, :libccluster), 
+#              Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      qRes,              CC,               getApp_c,   initBox,  eps,      strat, verbose )
+                     
+    ccall( (:ccluster_forJulia_refine, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int,  Int), 
+                      qRes,               CC,                getApp_c,   initBox,  eps,       strategy, 1,    verbose )
                     
 end
 
