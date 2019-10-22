@@ -42,6 +42,7 @@ include("disk.jl")
 include("algClus.jl")
 include("triangularSys.jl")
 include("Tcluster.jl")
+include("rand_generator.jl")
 
 __init__()
    
@@ -322,7 +323,7 @@ function ccluster_solve(getApprox::Function,
                         initBox::box, 
                         eps::fmpq, 
                         strategy::String, 
-                        verbose::Int)
+                        verbose::Int)::listConnComp
 
     getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
@@ -336,6 +337,28 @@ function ccluster_solve(getApprox::Function,
                        lccRes,            getApp_c,   initBox,  eps,       strategy, 1,   verbose )
     
     return lccRes
+    
+end
+
+function ccluster_solve(getApprox::Function, 
+                        eps::fmpq, 
+                        strategy::String, 
+                        verbose::Int)::Tuple{listConnComp, box}
+
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
+    
+    initBox::box = box(fmpq(0,1),fmpq(0,1),fmpq(0,1));
+    
+    lccRes = listConnComp()
+#     ccall( (:ccluster_interface_forJulia, :libccluster), 
+#              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+                     
+        ccall( (:ccluster_global_forJulia_func, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int, Int), 
+                       lccRes,            getApp_c,   initBox,  eps,       strategy, 1,   verbose )
+    
+    return lccRes, initBox
     
 end
 

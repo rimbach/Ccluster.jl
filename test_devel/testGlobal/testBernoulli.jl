@@ -42,13 +42,13 @@ bInit = [fmpq(0,1),fmpq(0,1),fmpq(1,1)] #box centered in 0 + sqrt(-1)*0 with wid
 precision = 53                          #get clusters of size 2^-53
     
 # local tests
-Res = ccluster(getAppBern, bInit, precision, strategy="default", verbosity="brief");
+# Res = ccluster(getAppBern, bInit, precision, strategy="default", verbosity="brief");
 # Res = ccluster(P,          bInit, precision, strategy="default", verbosity="brief");
 # Res = ccluster(P, P2,      bInit, precision, strategy="default", verbosity="brief");
 
 # global tests
 # Res = ccluster(getAppBern, precision, strategy="default", verbosity="brief");
-# Res = ccluster(P,          precision, strategy="default", verbosity="brief");
+Res = ccluster(P,          precision, strategy="default", verbosity="brief");
 # Res = ccluster(P, P2,      precision, strategy="default", verbosity="brief");
 
 # using CclusterPlot #only if you have installed CclusterPlot.jl
