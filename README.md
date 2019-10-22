@@ -29,6 +29,10 @@ than *D*.
 Each root of *P* in *B* is in exactly one cluster of the output, and clusters may contain
 roots of *P* in *2B*.
 
+To cluster all the roots of *P*, we use a bound on their modulus (e.g. Fujiwara bound)
+to find an initial box *B* containing all the roots.
+This is done in **ccluster** when it is called with no input box.
+
 The implemented algorithm is described here:
 https://dl.acm.org/citation.cfm?id=2930939
 
