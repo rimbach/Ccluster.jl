@@ -106,7 +106,11 @@ Res = ccluster(P, bInit, precision, verbosity="silent");
                                         #                         "brief" (brief report),
                                         #                         "results" (clusters are printed)
 ```
-Res in an array of couples (sum of multiplicity, disc):
+For computing all the roots of *P*, do:
+```
+Res = ccluster(P, precision, verbosity="silent");
+```
+Res is an array of couples (sum of multiplicity, disc):
 ```
 63-element Array{Any,1}:
  Any[1, Nemo.fmpq[975//1024, 1025//1024, 15//2048]]      
