@@ -54,6 +54,9 @@ of the solutions in each cluster.
 Each solution of *P* in *B* is in exactly one cluster of the output, and clusters may contain
 solutions of *P* in *2B*.
 
+Again, when called with no initial vector of square complex boxes *B*, **tcluster** returns 
+clusters for all solutions of *P*.
+
 The implemented algorithm is described here:
 https://arxiv.org/abs/1806.10164
 
