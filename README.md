@@ -296,6 +296,10 @@ bInitx = [fmpq(0,1),fmpq(0,1),fmpq(10,1)^40]
 
 nbSols, clusters, ellapsedTime = tcluster( [f,g], [bInitx], precision, verbosity = "silent" );
 ```
+To compute clusters containing all the solutions, do:
+```
+nbSols, clusters, ellapsedTime = tcluster( [f,g], precision, verbosity = "silent" );
+```
 nbSols is the total number of solutions (counted with multiplicity),
 clusters is an array of clusters of solutions and
 ellapsedTime is the time spent to solve the system.
