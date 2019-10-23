@@ -1,7 +1,7 @@
 using Nemo
 using Ccluster
 
-typeOfSyst = [9,9,9,9,9]
+typeOfSyst = [9,9,9]
 heigthOfSyst = 10
 
 nbOfSols = 1
