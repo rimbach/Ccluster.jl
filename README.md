@@ -130,6 +130,10 @@ If you have installed CclusterPlot.jl, you can plot the clusters with:
 ```
 using CclusterPlot
 
+plotCcluster(Res)
+```
+or
+```
 plotCcluster(Res, bInit, focus=false)
 ```
 The last argument is a flag telling the function wether to focus 
