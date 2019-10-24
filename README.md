@@ -29,6 +29,10 @@ than *D*.
 Each root of *P* in *B* is in exactly one cluster of the output, and clusters may contain
 roots of *P* in *2B*.
 
+To cluster all the roots of *P*, we use a bound on their modulus (e.g. Fujiwara bound)
+to find an initial box *B* containing all the roots.
+This is done in **ccluster** when it is called with no input box.
+
 The implemented algorithm is described here:
 https://dl.acm.org/citation.cfm?id=2930939
 
@@ -49,6 +53,9 @@ It outputs a set of *natural clusters* of solutions of P together with the sum o
 of the solutions in each cluster.
 Each solution of *P* in *B* is in exactly one cluster of the output, and clusters may contain
 solutions of *P* in *2B*.
+
+Again, when called with no initial vector of square complex boxes *B*, **tcluster** returns 
+clusters for all solutions of *P*.
 
 The implemented algorithm is described here:
 https://arxiv.org/abs/1806.10164
@@ -99,7 +106,11 @@ Res = ccluster(P, bInit, precision, verbosity="silent");
                                         #                         "brief" (brief report),
                                         #                         "results" (clusters are printed)
 ```
-Res in an array of couples (sum of multiplicity, disc):
+For computing all the roots of *P*, do:
+```
+Res = ccluster(P, precision, verbosity="silent");
+```
+Res is an array of couples (sum of multiplicity, disc):
 ```
 63-element Array{Any,1}:
  Any[1, Nemo.fmpq[975//1024, 1025//1024, 15//2048]]      
@@ -119,6 +130,10 @@ If you have installed CclusterPlot.jl, you can plot the clusters with:
 ```
 using CclusterPlot
 
+plotCcluster(Res)
+```
+or
+```
 plotCcluster(Res, bInit, focus=false)
 ```
 The last argument is a flag telling the function wether to focus 
@@ -284,6 +299,10 @@ precision = 53
 bInitx = [fmpq(0,1),fmpq(0,1),fmpq(10,1)^40]
 
 nbSols, clusters, ellapsedTime = tcluster( [f,g], [bInitx], precision, verbosity = "silent" );
+```
+To compute clusters containing all the solutions, do:
+```
+nbSols, clusters, ellapsedTime = tcluster( [f,g], precision, verbosity = "silent" );
 ```
 nbSols is the total number of solutions (counted with multiplicity),
 clusters is an array of clusters of solutions and

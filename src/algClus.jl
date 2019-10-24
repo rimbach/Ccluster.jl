@@ -166,7 +166,7 @@ function getBestApproximation(a::Array{algClus,1})::Array{acb,1}
 end
 
 # refine an algebraic cluster
-function refine_algClus( a::algClus, getApproximation::Function, prec::Int, strat::Int, verb::Int )::Array{Array{Ccluster.algClus,1},1}
+function refine_algClus( a::algClus, getApproximation::Function, prec::Int, strat::String, verb::Int )::Array{Array{Ccluster.algClus,1},1}
     lCC = Ccluster.listConnComp()
     lCCRes = Ccluster.listConnComp()
     eps::fmpq = fmpq(1, fmpz(2)^(prec-1))

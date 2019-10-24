@@ -23,15 +23,15 @@ TCLUSTER_CFEV = []
 TCLUSTER_CLUS = [[]]
 TCLUSTER_DEGS = [[]]
 TCLUSTER_PREC = [[]]
-TCLUSTER_STRA = [55] 
+TCLUSTER_STRA = ["default"] 
 TCLUSTER_VERB = [0] 
 
 ### interface
 function tcluster( polys,  #an array of pols
                    domain, #an array of Ccluster.box, possibly of length 1
                    prec;   #a precision: Int
-                   strat=55,  #a strategy: Int
-                   verbosity="brief" ) #a verbosity flag; by defaults, a brief summary
+                   strategy::String="default",  #a strategy: Int
+                   verbosity::String="brief" ) #a verbosity flag; by defaults, a brief summary
                                        #options are "silent", "results" 
                    
     global TCLUSTER_STRA, TCLUSTER_VERB
@@ -51,7 +51,7 @@ function tcluster( polys,  #an array of pols
         return -1, [], 0.0
     end
     
-    TCLUSTER_STRA[1] = strat
+    TCLUSTER_STRA[1] = strategy
     
     if typeof(verbosity) == String
         TCLUSTER_VERB[1] = 0
@@ -65,6 +65,72 @@ function tcluster( polys,  #an array of pols
     
     #solve the system
     clusters = Ccluster.clusterTriSys(initBox, prec)
+    ellapsedTime = time() - tic
+    
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster: solving OK\n")
+    end
+    
+    sumOfMults, solutions = constructOutput(clusters, prec)
+    
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster: construction output OK\n")
+    end
+    
+    if verbosity == "brief" || verbosity == "results" || verbosity == "debug"
+        printBrief(stdout, sumOfMults, solutions, ellapsedTime)
+#         print("TIMEINGETPOLAT: $(TIMEINGETPOLAT[1])\n")
+    end
+    if verbosity == "results"
+        printClusters(stdout, sumOfMults, solutions)
+    end
+    
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster: end\n")
+    end
+    
+    return sumOfMults, solutions, ellapsedTime
+end
+
+### interface global version
+function tcluster( polys,  #an array of pols
+                   prec;   #a precision: Int
+                   strategy::String="default",  #a strategy: Int
+                   verbosity::String="brief" ) #a verbosity flag; by defaults, a brief summary
+                                       #options are "silent", "results" 
+                   
+    global TCLUSTER_STRA, TCLUSTER_VERB
+    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS, TCLUSTER_PREC
+
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster, global version: begin\n")
+    end
+    
+    tic = time()
+    
+    Ccluster.initializeGlobalVariables(polys, prec, verbosity)
+    
+#     #construct the initial domain; dummy box
+#     domain::Array{Array{fmpq,1},1}=[[fmpq(0,1),fmpq(0,1),fmpq(1,1)]]
+#     initBox::Array{Ccluster.box,1}=[]
+#     if !initializeInitialDomain(initBox, domain)
+#         return -1, [], 0.0
+#     end
+    
+    TCLUSTER_STRA[1] = strategy
+    
+    if typeof(verbosity) == String
+        TCLUSTER_VERB[1] = 0
+    else
+        TCLUSTER_VERB[1] = verbosity
+    end
+    
+    if verbosity=="debug"
+        print("tcluster.jl, tcluster: initialization OK\n")
+    end
+    
+    #solve the system
+    clusters = Ccluster.clusterTriSysGlobal(length(polys), prec)
     ellapsedTime = time() - tic
     
     if verbosity=="debug"
@@ -258,6 +324,36 @@ function clusterTriSys(b::Array{Ccluster.box,1}, prec::Int)::Array{Array{Ccluste
     return clusters
 end
 
+# Global version: level is just to know at which level we are working
+function clusterTriSysGlobal(level::Int, prec::Int)::Array{Array{Ccluster.algClus,1},1}
+
+    global TCLUSTER_STRA, TCLUSTER_VERB
+    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS, TCLUSTER_PREC
+    
+#     actualPol::Int = length(b)
+    actualPol::Int = level
+    
+    if actualPol==1 #terminal case
+#         clusters::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPol(b[1], TCLUSTER_PREC[1][actualPol])
+        clusters::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPolGlobal(TCLUSTER_PREC[1][actualPol])
+    else            #other cases
+#         btemp::Ccluster.box = pop!(b)
+        clusterstemp::Array{Array{Ccluster.algClus,1},1} = clusterTriSysGlobal( level-1, prec )
+        clusters=[]
+        while length(clusterstemp)>0
+            clus::Array{Ccluster.algClus,1}=pop!(clusterstemp)
+#             clusterstemp2::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPolInFiber(clus, btemp, TCLUSTER_PREC[1][actualPol])
+            clusterstemp2::Array{Array{Ccluster.algClus,1},1} = Ccluster.clusterPolInFiberGlobal(clus, TCLUSTER_PREC[1][actualPol])
+            while length(clusterstemp2)>0
+                push!(clusters, pop!(clusterstemp2))
+            end
+        end
+        
+    end 
+    
+    return clusters
+end
+
 ### Compute clusters for first equation: univariate polynomial
 # approximation function
 function getAppFirst( dest::Ptr{acb_poly}, prec::Int )::Cvoid
@@ -284,6 +380,29 @@ function clusterPol(b::Ccluster.box, prec::Int)::Array{Array{Ccluster.algClus,1}
     while !Ccluster.isEmpty(qRes)
         objCC, ptrCC = Ccluster.pop_obj_and_ptr(qRes)
         push!(clusters, [Ccluster.algClus(objCC, ptrCC, b, prec)] )
+    end
+    
+    TCLUSTER_CFEV[1] = TCLUSTER_CFEVsave
+    return clusters
+end
+
+# global version
+function clusterPolGlobal(prec::Int)::Array{Array{Ccluster.algClus,1},1}
+
+    global TCLUSTER_STRA, TCLUSTER_VERB
+    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
+    
+    TCLUSTER_CFEVsave::Array{Ccluster.algClus,1} = TCLUSTER_CFEV[1]
+    
+    TCLUSTER_CFEV[1]=[]
+    clusters=Array{Ccluster.algClus,1}[]
+    eps = fmpq(1, fmpz(2)^(prec-1))
+    
+    qRes::Ccluster.listConnComp, initBox::Ccluster.box = Ccluster.ccluster_solve(getAppFirst, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
+    
+    while !Ccluster.isEmpty(qRes)
+        objCC, ptrCC = Ccluster.pop_obj_and_ptr(qRes)
+        push!(clusters, [Ccluster.algClus(objCC, ptrCC, initBox, prec)] )
     end
     
     TCLUSTER_CFEV[1] = TCLUSTER_CFEVsave
@@ -349,6 +468,43 @@ function clusterPolInFiber(a::Array{Ccluster.algClus,1}, b::Ccluster.box, prec::
             cc::Array{Ccluster.algClus,1} = Ccluster.clusCopy(c)
             objCC, ptrCC = Ccluster.pop_obj_and_ptr(qRes)
             push!(cc, Ccluster.algClus( objCC, ptrCC, b, prec ) )
+            push!(clusters, cc )
+        end
+            
+    end
+    
+    TCLUSTER_CFEV[1] = TCLUSTER_CFEVsave
+    
+    return clusters
+end
+
+#global version
+function clusterPolInFiberGlobal(a::Array{Ccluster.algClus,1}, prec::Int)::Array{Array{Ccluster.algClus,1},1}
+    
+    global TCLUSTER_STRA, TCLUSTER_VERB
+    global TCLUSTER_POLS, TCLUSTER_CFEV, TCLUSTER_CLUS, TCLUSTER_DEGS
+    
+    TCLUSTER_CFEVsave::Array{Ccluster.algClus,1} = TCLUSTER_CFEV[1]
+    #floor d of the TAC
+    actualPol::Int = length(a) + 1
+    #push a in TCLUSTER_CLUS[1][actualPol-1] that should be empty
+    push!(TCLUSTER_CLUS[1][actualPol-1], a)
+    
+    #initialize clusters
+    clusters=Array{Ccluster.algClus,1}[]
+    while length( TCLUSTER_CLUS[1][actualPol-1] )>0
+        
+        c::Array{Ccluster.algClus,1} = pop!(TCLUSTER_CLUS[1][actualPol-1])
+        TCLUSTER_CFEV[1] = c
+        eps::fmpq = fmpq(1, fmpz(2)^(prec-1))
+        
+        qRes::Ccluster.listConnComp, initBox::Ccluster.box = Ccluster.ccluster_solve(getAppSys, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
+        c = TCLUSTER_CFEV[1]
+        
+        while !Ccluster.isEmpty(qRes)
+            cc::Array{Ccluster.algClus,1} = Ccluster.clusCopy(c)
+            objCC, ptrCC = Ccluster.pop_obj_and_ptr(qRes)
+            push!(cc, Ccluster.algClus( objCC, ptrCC, initBox, prec ) )
             push!(clusters, cc )
         end
             

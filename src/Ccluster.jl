@@ -42,6 +42,7 @@ include("disk.jl")
 include("algClus.jl")
 include("triangularSys.jl")
 include("Tcluster.jl")
+include("rand_generator.jl")
 
 __init__()
    
@@ -84,6 +85,8 @@ function parseVerbosity( verbosity::String )::Int
         return 0
     elseif verbosity=="brief"
         return 1
+    elseif verbosity=="stats"
+        return 2
     elseif verbosity=="results"
         return 3
     else
@@ -94,13 +97,13 @@ end
 function ccluster( getApprox::Function, 
                    initialBox::Array{fmpq,1}, 
                    precision::Int;
-                   strat=55, #a strategy: Int
+                   strategy="default", #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
       
       initBox::box = box(initialBox[1],initialBox[2],initialBox[3]); 
       
-      queueResults = ccluster( getApprox, initBox, precision, strat=strat, verbosity=verbosity )
+      queueResults = ccluster( getApprox, initBox, precision, strategy=strategy, verbosity=verbosity )
     
       for sol in queueResults
           tempBO = sol[2]
@@ -114,7 +117,7 @@ end
 function ccluster( getApprox::Function, 
                    initBox::box, 
                    precision::Int;
-                   strat=55, #a strategy: Int
+                   strategy="default", #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
     getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
@@ -122,9 +125,13 @@ function ccluster( getApprox::Function,
     verbose::Int = parseVerbosity(verbosity)
     eps = fmpq(1, fmpz(2)^precision)
     
-    ccall( (:ccluster_interface_forJulia, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
-                     lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+#     ccall( (:ccluster_interface_forJulia, :libccluster), 
+#              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+                     
+    ccall( (:ccluster_forJulia_func, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int, Int), 
+                       lccRes,            getApp_c,   initBox,  eps,       strategy, 1,   verbose )
                      
     queueResults = []
     
@@ -137,16 +144,44 @@ function ccluster( getApprox::Function,
     return queueResults                                 
 end
 
+function ccluster( getApprox::Function, 
+                   precision::Int;
+                   strategy="default", #a strategy: Str
+                   verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
+                                       #options are "silent", "brief" and "results"
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
+    lccRes = listConnComp()
+    verbose::Int = parseVerbosity(verbosity)
+    eps = fmpq(1, fmpz(2)^precision)
+    
+    initBox::box = box(fmpq(0,1),fmpq(0,1),fmpq(0,1));
+    
+    ccall( (:ccluster_global_forJulia_func, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int, Int), 
+                       lccRes,            getApp_c,   initBox,  eps,       strategy, 1,   verbose )
+                     
+    queueResults = []
+    
+    while !isEmpty(lccRes)
+        tempCC = pop(lccRes)
+        tempBO = getComponentBox(tempCC,initBox)
+        tempBO = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
+        push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    return queueResults                                 
+end
+
 function ccluster( P_FMPQ::fmpq_poly, 
                    initialBox::Array{fmpq,1}, 
                    precision::Int;
-                   strat=55, #a strategy: Int
+                   strategy="default", #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
                                     
       initBox::box = box(initialBox[1],initialBox[2],initialBox[3]); 
       
-      queueResults = ccluster( P_FMPQ, initBox, precision, strat=strat, verbosity=verbosity )
+      queueResults = ccluster( P_FMPQ, initBox, precision, strategy=strategy, verbosity=verbosity )
     
       for sol in queueResults
           tempBO = sol[2]
@@ -159,17 +194,17 @@ end
 function ccluster( P_FMPQ::fmpq_poly, 
                    initBox::box, 
                    precision::Int;
-                   strat=55, #a strategy: Int
+                   strategy="default", #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
      
     lccRes = listConnComp()
     verbose::Int = parseVerbosity(verbosity)
     eps = fmpq(1, fmpz(2)^precision)
-    
-    ccall( (:ccluster_interface_forJulia_realRat_poly, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Int,   Int), 
-                       lccRes,            P_FMPQ,         initBox,  eps,       strat, verbose )
+                       
+    ccall( (:ccluster_forJulia_realRat_poly, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Cstring, Int, Int), 
+                       lccRes,            P_FMPQ,         initBox,  eps,       strategy, 1,  verbose )
                      
     queueResults = []
     
@@ -182,15 +217,43 @@ function ccluster( P_FMPQ::fmpq_poly,
     return queueResults                                   
 end
 
+function ccluster( P_FMPQ::fmpq_poly, 
+                   precision::Int;
+                   strategy="default", #a strategy: Int
+                   verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
+                                       #options are "silent", "brief" and "results"
+     
+    lccRes = listConnComp()
+    verbose::Int = parseVerbosity(verbosity)
+    eps = fmpq(1, fmpz(2)^precision)
+    
+    initBox::box = box(fmpq(0,1),fmpq(0,1),fmpq(0,1));
+    
+    ccall( (:ccluster_global_forJulia_realRat_poly, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Cstring, Int, Int), 
+                       lccRes,            P_FMPQ,         initBox,  eps,       strategy, 1,  verbose )
+                     
+    queueResults = []
+    
+    while !isEmpty(lccRes)
+        tempCC = pop(lccRes)
+        tempBO = getComponentBox(tempCC,initBox)
+        tempBO = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
+        push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    return queueResults                                   
+end
+
 function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly, 
                    initialBox::Array{fmpq,1}, 
                    precision::Int;
-                   strat=55, #a strategy: Int
+                   strategy="default", #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
       initBox::box = box(initialBox[1],initialBox[2],initialBox[3]); 
       
-      queueResults = ccluster( Preal_FMPQ, Pimag_FMPQ, initBox, precision, strat=strat, verbosity=verbosity )
+      queueResults = ccluster( Preal_FMPQ, Pimag_FMPQ, initBox, precision, strategy=strategy, verbosity=verbosity )
     
       for sol in queueResults
           tempBO = sol[2]
@@ -203,16 +266,20 @@ end
 function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly, 
                    initBox::box, 
                    precision::Int;
-                   strat=55, #a strategy: Int
+                   strategy="default", #a strategy: Int
                    verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                        #options are "silent", "brief" and "results"
     lccRes = listConnComp()
     verbose::Int = parseVerbosity(verbosity)
     eps = fmpq(1, fmpz(2)^precision)
     
-    ccall( (:ccluster_interface_forJulia_realRat_poly_real_imag, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Int,   Int), 
-                       lccRes,            Preal_FMPQ,     Pimag_FMPQ,     initBox,  eps,       strat, verbose )
+#     ccall( (:ccluster_interface_forJulia_realRat_poly_real_imag, :libccluster), 
+#              Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Int,   Int), 
+#                        lccRes,            Preal_FMPQ,     Pimag_FMPQ,     initBox,  eps,       55, verbose )
+                       
+    ccall( (:ccluster_forJulia_realRat_poly_real_imag, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Cstring, Int, Int), 
+                       lccRes,            Preal_FMPQ,     Pimag_FMPQ,     initBox,  eps,       strategy,   1,   verbose )
                      
     queueResults = []
     
@@ -225,21 +292,73 @@ function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly,
     return queueResults                                   
 end
 
+function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly, 
+                   precision::Int;
+                   strategy="default", #a strategy: Int
+                   verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
+                                       #options are "silent", "brief" and "results"
+    lccRes = listConnComp()
+    verbose::Int = parseVerbosity(verbosity)
+    eps = fmpq(1, fmpz(2)^precision)
+    
+    initBox::box = box(fmpq(0,1),fmpq(0,1),fmpq(0,1));
+    
+    ccall( (:ccluster_global_forJulia_realRat_poly_real_imag, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Cstring, Int, Int), 
+                       lccRes,            Preal_FMPQ,     Pimag_FMPQ,     initBox,  eps,       strategy,   1,   verbose )
+                     
+    queueResults = []
+    
+    while !isEmpty(lccRes)
+        tempCC = pop(lccRes)
+        tempBO = getComponentBox(tempCC,initBox)
+        tempBO = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
+        push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    return queueResults                                   
+end
+
 function ccluster_solve(getApprox::Function, 
                         initBox::box, 
                         eps::fmpq, 
-                        strat::Int, 
-                        verbose::Int)
-    
-#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
+                        strategy::String, 
+                        verbose::Int)::listConnComp
+
     getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
     lccRes = listConnComp()
-    ccall( (:ccluster_interface_forJulia, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
-                     lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+#     ccall( (:ccluster_interface_forJulia, :libccluster), 
+#              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+                     
+        ccall( (:ccluster_forJulia_func, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int, Int), 
+                       lccRes,            getApp_c,   initBox,  eps,       strategy, 1,   verbose )
     
     return lccRes
+    
+end
+
+function ccluster_solve(getApprox::Function, 
+                        eps::fmpq, 
+                        strategy::String, 
+                        verbose::Int)::Tuple{listConnComp, box}
+
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
+    
+    initBox::box = box(fmpq(0,1),fmpq(0,1),fmpq(0,1));
+    
+    lccRes = listConnComp()
+#     ccall( (:ccluster_interface_forJulia, :libccluster), 
+#              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+                     
+        ccall( (:ccluster_global_forJulia_func, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int, Int), 
+                       lccRes,            getApp_c,   initBox,  eps,       strategy, 1,   verbose )
+    
+    return lccRes, initBox
     
 end
 
@@ -249,15 +368,18 @@ function ccluster_refine(qRes::listConnComp,
                          CC::listConnComp, 
                          initBox::box,
                          eps::fmpq, 
-                         strat::Int, 
+                         strategy::String, 
                          verbose::Int = 0 )
     
-#     const getApp_c = cfunction(getApprox, Nothing, (Ref{acb_poly}, Int))
     getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
     
-    ccall( (:ccluster_refine_forJulia, :libccluster), 
-             Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Int,   Int), 
-                     qRes,              CC,               getApp_c,   initBox,  eps,      strat, verbose )
+#     ccall( (:ccluster_refine_forJulia, :libccluster), 
+#              Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      qRes,              CC,               getApp_c,   initBox,  eps,      strat, verbose )
+                     
+    ccall( (:ccluster_forJulia_refine, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int,  Int), 
+                      qRes,               CC,                getApp_c,   initBox,  eps,       strategy, 1,    verbose )
                     
 end
 
@@ -314,7 +436,7 @@ end
 function ccluster_draw( getApprox::Function, 
                         initialBox::Array{fmpq,1}, 
                         precision::Int;
-                        strat=55, #a strategy: Int
+                        strategy="default", #a strategy: Int
                         verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                             #options are "silent", "brief" and "results"
     
@@ -326,10 +448,14 @@ function ccluster_draw( getApprox::Function,
     
     lccRes = listConnComp()
     lcbDis = listBox()
-    
-    ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
-             Nothing, (Ref{listConnComp},Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
-                     lccRes,  lcbDis,          getApp_c,    initBox,  eps,      strat, verbose )
+#     
+#     ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
+#              Nothing, (Ref{listConnComp},Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,  lcbDis,          getApp_c,    initBox,  eps,      strat, verbose )
+                     
+    ccall( (:ccluster_forJulia_draw, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Cstring, Int,   Int), 
+                       lccRes,            lcbDis,       getApp_c,        initBox,  eps,       strategy, 1,    verbose )
                      
     queueResults = []
     while !isEmpty(lccRes)
