@@ -1,6 +1,6 @@
 name = "Ccluster"
 uuid = "8fd415a7-295e-5ecb-bee7-308748477f8f"
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 AbstractAlgebra = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
