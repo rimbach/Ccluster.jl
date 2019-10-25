@@ -48,12 +48,12 @@ precision = 53                          #get clusters of size 2^-53
 
 # global tests
 # Res = ccluster(getAppBern, precision, strategy="default", verbosity="brief");
-Res = ccluster(P,          precision, strategy="default", verbosity="brief");
-# Res = ccluster(P, P2,      precision, strategy="default", verbosity="brief");
+# Res = ccluster(P,          precision, strategy="default", verbosity="brief");
+Res = ccluster(P, P2,      precision, strategy="default", verbosity="brief");
 
-# using CclusterPlot #only if you have installed CclusterPlot.jl
+using CclusterPlot #only if you have installed CclusterPlot.jl
 
 # plotCcluster(Res, bInit, focus=true) #use true instead of false to focus on clusters
 
-# plotCcluster(Res) #use true instead of false to focus on clusters
+plotCcluster(Res) #use true instead of false to focus on clusters
 

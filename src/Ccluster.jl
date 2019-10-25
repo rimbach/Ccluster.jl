@@ -436,7 +436,7 @@ end
 function ccluster_draw( getApprox::Function, 
                         initialBox::Array{fmpq,1}, 
                         precision::Int;
-                        strat=55, #a strategy: Int
+                        strategy="default", #a strategy: Int
                         verbosity="silent" )#a verbosity flag; by defaults, nothing is printed
                                             #options are "silent", "brief" and "results"
     
@@ -448,10 +448,14 @@ function ccluster_draw( getApprox::Function,
     
     lccRes = listConnComp()
     lcbDis = listBox()
-    
-    ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
-             Nothing, (Ref{listConnComp},Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
-                     lccRes,  lcbDis,          getApp_c,    initBox,  eps,      strat, verbose )
+#     
+#     ccall( (:ccluster_interface_forJulia_draw, :libccluster), 
+#              Nothing, (Ref{listConnComp},Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,  lcbDis,          getApp_c,    initBox,  eps,      strat, verbose )
+                     
+    ccall( (:ccluster_forJulia_draw, :libccluster), 
+             Nothing, (Ref{listConnComp}, Ref{listBox}, Ref{Nothing},    Ref{box}, Ref{fmpq}, Cstring, Int,   Int), 
+                       lccRes,            lcbDis,       getApp_c,        initBox,  eps,       strategy, 1,    verbose )
                      
     queueResults = []
     while !isEmpty(lccRes)
