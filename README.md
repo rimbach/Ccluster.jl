@@ -17,7 +17,7 @@ The Branch compat-julia-v0.6 is compatible with julia 0.6, but is not intended t
 
 The main function provided by Ccluster.jl is **ccluster**.
 It takes as input
-a polynomial *P*, 
+a polynomial *P* in *C[z]*, 
 a square complex box *B*
 and a precision *eps*.
 
@@ -29,9 +29,14 @@ than *D*.
 Each root of *P* in *B* is in exactly one cluster of the output, and clusters may contain
 roots of *P* in *2B*.
 
-To cluster all the roots of *P*, we use a bound on their modulus (e.g. Fujiwara bound)
+Input polynomial *P* can be given as an oracle polynomial, that is a function returning arbitrary
+precision approximations of coefficients of *P*.
+In case where *P* has rational coefficients, it can be given exactly.
+
+To cluster all the roots of *P*, a bound on their modulus (e.g. Fujiwara bound)
 to find an initial box *B* containing all the roots.
 This is done in **ccluster** when it is called with no input box.
+Notice that input oracle for *P* must have no zero leading coefficient.
 
 The implemented algorithm is described here:
 https://dl.acm.org/citation.cfm?id=2930939
