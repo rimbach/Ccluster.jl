@@ -323,7 +323,7 @@ In general, you can check this property using Nemo.gcd:
 ```
 Nemo.gcd(f,Nemo.lead(g))
 ```
-Providing this is 1 compute clusters containing all the solutions, do:
+Providing this is 1, compute clusters containing all the solutions with:
 ```
 nbSols, clusters, ellapsedTime = tcluster( [f,g], precision, verbosity = "silent" );
 ```
