@@ -36,7 +36,7 @@ In case where *P* has rational coefficients, it can be given exactly.
 To cluster all the roots of *P*, a bound on their modulus (e.g. Fujiwara bound)
 to find an initial box *B* containing all the roots.
 This is done in **ccluster** when it is called with no input box.
-Notice that input oracle for *P* must have no zero leading coefficient.
+Notice that input oracle for *P* must have no zero leading coefficients.
 
 The implemented algorithm is described here:
 https://dl.acm.org/citation.cfm?id=2930939
@@ -59,8 +59,20 @@ of the solutions in each cluster.
 Each solution of *P* in *B* is in exactly one cluster of the output, and clusters may contain
 solutions of *P* in *2B*.
 
-Again, when called with no initial vector of square complex boxes *B*, **tcluster** returns 
-clusters for all solutions of *P*.
+Let *z1<z2<...<zn*.
+Input triangular system *P: f1=f2=...=fn=0* must satisfy, 
+* *S* has a finite number of solutions
+* greatest variable in *fi* is *zi* and *deg(fi,zi)>0*
+Notice that in particular, we **do not require** simple solutions,
+and we **do not require** that the leading coefficient of *fi*
+has no common factor with the *fj*'s for *j<i*.
+
+In the special case where the leading coefficient of *fi*
+has no common factor with the *fj*'s for *j<i*
+(for instance *P* is a regular chain),
+**tcluster**
+returns all solutions of *P* when no initial vector of square complex boxes *B*
+is given in input.
 
 The implemented algorithm is described here:
 https://arxiv.org/abs/1806.10164
