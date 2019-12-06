@@ -50,7 +50,7 @@ if you use it in your research.
 The notion of natural clusters is straightforwardly extended to the multivariate case.
 Our function **tcluster** (t for triangular)
 takes as input
-a triangular polynomial system *P*, 
+a triangular polynomial system *P* which polynomials have rational coefficients, 
 a vector of square complex boxes *B*
 and a precision *eps*.
 
@@ -318,7 +318,12 @@ bInitx = [fmpq(0,1),fmpq(0,1),fmpq(10,1)^40]
 
 nbSols, clusters, ellapsedTime = tcluster( [f,g], [bInitx], precision, verbosity = "silent" );
 ```
-To compute clusters containing all the solutions, do:
+Here *g* is monic and its leading coefficient has no common factor with *f*.
+In general, you can check this property using Nemo.gcd:
+```
+Nemo.gcd(f,Nemo.lead(g))
+```
+Providing this is 1 compute clusters containing all the solutions, do:
 ```
 nbSols, clusters, ellapsedTime = tcluster( [f,g], precision, verbosity = "silent" );
 ```
