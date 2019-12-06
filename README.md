@@ -60,10 +60,11 @@ Each solution of *P* in *B* is in exactly one cluster of the output, and cluster
 solutions of *P* in *2B*.
 
 Let *z1<z2<...<zn*.
-Input triangular system *P: f1=f2=...=fn=0* must satisfy, 
-* *S* has a finite number of solutions
-* greatest variable in *fi* is *zi* and *deg(fi,zi)>0*
-Notice that in particular, we **do not require** simple solutions,
+Input triangular system *P: f1=f2=...=fn=0* must satisfy:
+* *S* has a finite number of solutions,
+* greatest variable in *fi* is *zi* and *deg(fi,zi)>0*.
+
+Notice that we **do not require** simple solutions,
 and we **do not require** that the leading coefficient of *fi*
 has no common factor with the *fj*'s for *j<i*.
 
