@@ -498,7 +498,14 @@ function clusterPolInFiberGlobal(a::Array{Ccluster.algClus,1}, prec::Int)::Array
         TCLUSTER_CFEV[1] = c
         eps::fmpq = fmpq(1, fmpz(2)^(prec-1))
         
-        qRes::Ccluster.listConnComp, initBox::Ccluster.box = Ccluster.ccluster_solve(getAppSys, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
+        qRes::Ccluster.listConnComp, initBox::Ccluster.box, resCall::Int = Ccluster.ccluster_solve_forTcluster(getAppSys, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
+        
+        if (resCall == 0)
+            print("TCLUSTER: WARNINGS: leading coefficient of $(actualPol)-th equation\n")
+            print("                    seams to vanish (less than 2^(-53))\n")
+            print("                    solutions with huge norm may be missing\n")
+        end
+        
         c = TCLUSTER_CFEV[1]
         
         while !Ccluster.isEmpty(qRes)

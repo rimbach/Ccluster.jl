@@ -362,6 +362,28 @@ function ccluster_solve(getApprox::Function,
     
 end
 
+function ccluster_solve_forTcluster(getApprox::Function, 
+                        eps::fmpq, 
+                        strategy::String, 
+                        verbose::Int)::Tuple{listConnComp, box, Int}
+
+    getApp_c = @cfunction( $getApprox, Cvoid, (Ptr{acb_poly}, Int))
+    
+    initBox::box = box(fmpq(0,1),fmpq(0,1),fmpq(0,1));
+    
+    lccRes = listConnComp()
+#     ccall( (:ccluster_interface_forJulia, :libccluster), 
+#              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
+#                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
+                     
+    resCall::Int =  ccall( (:ccluster_global_forJulia_forTcluster_func, :libccluster), 
+             Int, (Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int, Int), 
+                       lccRes,            getApp_c,   initBox,  eps,       strategy, 1,   verbose )
+#     print("resCall: $resCall\n")
+    return lccRes, initBox, resCall
+    
+end
+
 
 function ccluster_refine(qRes::listConnComp, 
                          getApprox::Function, 
