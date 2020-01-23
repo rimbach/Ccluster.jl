@@ -84,8 +84,11 @@ Enter the packages manager with
 ```
 ]
 ```
-then
-
+then install the last registered version with:
+```
+add Ccluster.jl
+```
+Alternatively, install the last version with:
 ```
 add https://github.com/rimbach/Ccluster.jl
 ```
