@@ -9,6 +9,14 @@
 #  (at your option) any later version.  See <http://www.gnu.org/licenses/>.
 #
 
+#   for root radii
+struct _annuli_list
+    _begin::Ptr{Cvoid}
+    _end::Ptr{Cvoid}
+    _size::Cint
+    _clear::Ptr{Cvoid}
+end
+
 mutable struct box
     _center_real_den::Int
     _center_real_num::Int
@@ -17,6 +25,8 @@ mutable struct box
     _radius_den::Int
     _radius_num::Int
     _maxNbSols::Cint
+#   for root radii
+    _annuli::NTuple{4, _annuli_list}
     
     function box()
         z = new()

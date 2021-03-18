@@ -16,3 +16,11 @@ Res = ccluster(P, bInit, precision, verbosity="silent");
 # using CclusterPlot #only if you have installed CclusterPlot.jl
 
 # plotCcluster(Res, bInit, focus=false) #use true instead of false to focus on clusters
+
+Res = ccluster(P, precision, verbosity="silent");
+
+Res = risolate(P, precision, verbosity="silent");
+
+bInit = [fmpq(0,1),fmpq(4,1)]
+
+Res = risolate(P, bInit, precision, verbosity="silent");

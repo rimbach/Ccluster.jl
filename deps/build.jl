@@ -2,7 +2,7 @@ using Libdl
 
 oldwdir = pwd()
 
-@show CCLUSTER_VERSION = "master"
+@show CCLUSTER_VERSION = "v1.1.5"
 
 pkgdir = dirname(dirname(@__FILE__))
 wdir = joinpath(pkgdir, "deps")

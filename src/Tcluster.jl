@@ -232,7 +232,7 @@ function initializeInitialDomain(initBox::Array{Ccluster.box,1}, domain)::Bool
             push!(initBox, Ccluster.box(btemp))
         end
     else
-        print("bad length of domain: should be either 1 or $(TCLUSTER_POLS[1])\n")
+        print("bad length of domain: should be either 1 or $(length(TCLUSTER_POLS[1]))\n")
         return false
     end
     return true
@@ -398,7 +398,8 @@ function clusterPolGlobal(prec::Int)::Array{Array{Ccluster.algClus,1},1}
     clusters=Array{Ccluster.algClus,1}[]
     eps = fmpq(1, fmpz(2)^(prec-1))
     
-    qRes::Ccluster.listConnComp, initBox::Ccluster.box = Ccluster.ccluster_solve(getAppFirst, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
+#     qRes::Ccluster.listConnComp, initBox::Ccluster.box = Ccluster.ccluster_solve(getAppFirst, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
+    qRes::Ccluster.listConnComp, initBox::Ccluster.box = Ccluster.ccluster_solve(TCLUSTER_POLS[1][1], eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
     
     while !Ccluster.isEmpty(qRes)
         objCC, ptrCC = Ccluster.pop_obj_and_ptr(qRes)
@@ -420,6 +421,7 @@ function clusterPol(b::Ccluster.algClus, prec::Int)::Array{Array{Ccluster.algClu
 #     clusters::Array{Array{Ccluster.algClus,1},1} = Ccluster.refine_algClus( b, getAppSys, prec, TCLUSTER_STRA[1], TCLUSTER_VERB[1])
     clusters::Array{Array{Ccluster.algClus,1},1} = Ccluster.refine_algClus( b, getAppFirst, prec, TCLUSTER_STRA[1], TCLUSTER_VERB[1])
     TCLUSTER_CFEV[1] = TCLUSTER_CFEVsave
+    
     return clusters
     
 end
@@ -462,6 +464,7 @@ function clusterPolInFiber(a::Array{Ccluster.algClus,1}, b::Ccluster.box, prec::
         eps::fmpq = fmpq(1, fmpz(2)^(prec-1))
         
         qRes::Ccluster.listConnComp = Ccluster.ccluster_solve(getAppSys, b, eps, TCLUSTER_STRA[1], TCLUSTER_VERB[1]);
+#         qRes::Ccluster.listConnComp = Ccluster.ccluster_solve(getAppSys, b, eps, TCLUSTER_STRA[1], 4);
         c = TCLUSTER_CFEV[1]
         
         while !Ccluster.isEmpty(qRes)
@@ -474,7 +477,6 @@ function clusterPolInFiber(a::Array{Ccluster.algClus,1}, b::Ccluster.box, prec::
     end
     
     TCLUSTER_CFEV[1] = TCLUSTER_CFEVsave
-    
     return clusters
 end
 
