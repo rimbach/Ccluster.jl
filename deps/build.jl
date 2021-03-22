@@ -76,15 +76,11 @@ if Sys.iswindows()
         println("No binaries for 32 bits windows yet ... ")
     else
         println("downloading binaries ... ")
-#         download_dll("https://cims.nyu.edu/~imbach/libs/libgmp-10.dll", joinpath(vdir, "lib", "libgmp-10.dll"))
-#         download_dll("https://cims.nyu.edu/~imbach/libs/libmpfr-6.dll", joinpath(vdir, "lib", "libmpfr-6.dll"))
-#         download_dll("https://cims.nyu.edu/~imbach/libs/libflint-13.dll", joinpath(vdir, "lib", "libflint-13.dll"))
-#         download_dll("https://cims.nyu.edu/~imbach/libs/libarb-2.dll", joinpath(vdir, "lib", "libarb-2.dll"))
-        download_dll("https://cims.nyu.edu/~imbach/libs/libccluster.dll", joinpath(vdir, "lib", "libccluster.dll"))
+        download_dll("https://github.com/rimbach/Ccluster/releases/download/v1.1.5/libccluster.dll", joinpath(vdir, "lib", "libccluster.dll"))
         try
-            run(`ln -sf $NemoLibsDir\\bin\\libflint-13.dll $vdir\\lib\\libflint-13.dll`)
+            run(`ln -sf $NemoLibsDir\\bin\\libflint.dll $vdir\\lib\\libflint-15.dll`)
         catch
-            cp(joinpath(NemoLibsDir, "bin", "libflint-13.dll"), joinpath(vdir, "lib", "libflint-13.dll"), remove_destination=true)
+            cp(joinpath(NemoLibsDir, "bin", "libflint.dll"), joinpath(vdir, "lib", "libflint-15.dll"), remove_destination=true)
         end
         try
             run(`ln -sf $NemoLibsDir\\bin\\libarb.dll $vdir\\lib\\libarb-2.dll`)
@@ -98,7 +94,7 @@ else
     cd(joinpath("$wdir", "Ccluster"))
     withenv("LD_LIBRARY_PATH"=>"$vdir/lib", "LDFLAGS"=>LDFLAGS) do
       run(`./configure --prefix=$vdir --disable-static --enable-shared --disable-pthread --with-flint=$NemoLibsDir --with-arb=$NemoLibsDir`)
-      run(`make -j4`)
+      run(`make library -j4`)
       run(`make install`)
     end
     println("DONE")
