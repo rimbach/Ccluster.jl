@@ -17,7 +17,7 @@ mutable struct listBox
     
     function listBox()
         z = new()
-        ccall( (:compBox_list_init, :libccluster), 
+        ccall( (:compBox_list_init, libccluster), 
              Nothing, (Ref{listBox},), 
                     z)
 #         finalizer(z, _listBox_clear_fn)
@@ -27,20 +27,20 @@ mutable struct listBox
 end
 
 function _listBox_clear_fn(lc::listBox)
-    ccall( (:compBox_list_clear, :libccluster), 
+    ccall( (:compBox_list_clear, libccluster), 
          Nothing, (Ref{listBox},), 
                 lc)
 end
 
 function isEmpty( lc::listBox )
-    res = ccall( (:compBox_list_is_empty, :libccluster), 
+    res = ccall( (:compBox_list_is_empty, libccluster), 
                   Cint, (Ref{listBox},), 
                         lc )
     return Bool(res)
 end
 
 function pop( lc::listBox )
-    res = ccall( (:compBox_list_pop, :libccluster), 
+    res = ccall( (:compBox_list_pop, libccluster), 
                   Ptr{box}, (Ref{listBox},), 
                                  lc)                        
     resobj::box = unsafe_load(res)
@@ -49,7 +49,7 @@ end
 
 
 function push( lc::listBox, cc::box )
-    ccall( (:compBox_list_push, :libccluster), 
+    ccall( (:compBox_list_push, libccluster), 
              Nothing, (Ref{listBox}, Ref{box}), 
                     lc,               cc)
 end
