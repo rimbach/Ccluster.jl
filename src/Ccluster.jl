@@ -24,13 +24,13 @@ using Ccluster_jll
 
 function __init__()
 
-    if "HOSTNAME" in keys(ENV) && ENV["HOSTNAME"] == "juliabox"
-       push!(Libdl.DL_LOAD_PATH, "/usr/local/lib")
-    elseif Sys.islinux()
-        push!(Libdl.DL_LOAD_PATH, libdir)
-    else
-        push!(Libdl.DL_LOAD_PATH, libdir)
-   end
+#    if "HOSTNAME" in keys(ENV) && ENV["HOSTNAME"] == "juliabox"
+#       push!(Libdl.DL_LOAD_PATH, "/usr/local/lib")
+#    elseif Sys.islinux()
+#        push!(Libdl.DL_LOAD_PATH, libdir)
+#    else
+#        push!(Libdl.DL_LOAD_PATH, libdir)
+#   end
 #     println("")
 #     println("Welcome to Ccluster version 0.0.1")
 #     println("")
