@@ -36,7 +36,7 @@ function __init__()
 #     println("")
 #       print("libccluster: $libccluster \n")
 #       Libdl.dlopen(libccluster)
-    push!(Libdl.DL_LOAD_PATH, "/home/imbach/.julia/artifacts/7524922475b968e0b4750f25dfc030c1fc43d65e/lib/")
+#     push!(Libdl.DL_LOAD_PATH, "/home/imbach/.julia/artifacts/7524922475b968e0b4750f25dfc030c1fc43d65e/lib/")
 end
 
 include("box.jl")
