@@ -60,7 +60,7 @@ function ptr_set_acb_poly( dest::Ref{acb_poly}, src::acb_poly )
 end
 
 function ptr_set_2fmpq_poly( dest::Ref{acb_poly}, re::fmpq_poly, im::fmpq_poly, prec::Int )
-    ccall((:acb_poly_set2_fmpq_poly, :libarb), Nothing,
+    ccall((:acb_poly_set2_fmpq_poly, libarb), Nothing,
                 (Ref{acb_poly}, Ref{fmpq_poly}, Ref{fmpq_poly}, Int), 
                  dest,         re,             im,        prec)
 end
