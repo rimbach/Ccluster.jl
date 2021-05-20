@@ -1,4 +1,4 @@
-__precompile__()
+# __precompile__()
 
 module Ccluster
 
@@ -7,7 +7,7 @@ using Libdl
 import Nemo: fmpq, fmpz, acb_poly, fmpq_poly, QQ, prec, parent,
              degree, coeff, accuracy_bits
 
-
+using Ccluster_jll
 
 ###############################################################################
 #
@@ -15,10 +15,12 @@ import Nemo: fmpq, fmpz, acb_poly, fmpq_poly, QQ, prec, parent,
 #
 ###############################################################################
 
-const pkgdir = realpath(joinpath(dirname(@__FILE__), ".."))
-const libdir = joinpath(pkgdir, "local", "lib")
+#DEPRECATED
+#const pkgdir = realpath(joinpath(dirname(@__FILE__), ".."))
+#const libdir = joinpath(pkgdir, "local", "lib")
 
-const libccluster = joinpath(pkgdir, "local", "lib", "libccluster")
+#const libccluster = joinpath(pkgdir, "local", "lib", "libccluster")
+#libccluster is now defined by Ccluster_jll
 
 function __init__()
 
