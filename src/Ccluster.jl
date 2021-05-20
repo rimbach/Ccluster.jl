@@ -52,7 +52,7 @@ include("rand_generator.jl")
 __init__()
    
 function ptr_set_acb_poly( dest::Ref{acb_poly}, src::acb_poly )
-    ccall((:acb_poly_set, :libarb), Nothing,
+    ccall((:acb_poly_set, libarb), Nothing,
                 (Ref{acb_poly}, Ref{acb_poly}, Int), 
                  dest,         src,          prec(parent(src)))
 end
