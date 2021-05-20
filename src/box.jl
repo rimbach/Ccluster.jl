@@ -43,7 +43,7 @@ mutable struct box
         ccall( (:compBox_init, libccluster), 
              Nothing, (Ref{box},), 
                     z)
-        ccall( (:compBox_set_3realRat, :libccluster), 
+        ccall( (:compBox_set_3realRat, libccluster), 
              Nothing, (Ref{box}, Ref{fmpq}, Ref{fmpq}, Ref{fmpq}), 
                     z,        re,      im,       width)
         finalizer(_box_clear_fn, z)
