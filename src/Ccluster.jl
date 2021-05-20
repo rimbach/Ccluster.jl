@@ -22,7 +22,7 @@ using Ccluster_jll
 #const libccluster = joinpath(pkgdir, "local", "lib", "libccluster")
 #libccluster is now defined by Ccluster_jll
 
-# const libccluster = Libdl.dlopen(expanduser("~/.julia/artifacts/7524922475b968e0b4750f25dfc030c1fc43d65e/lib/libccluster.so"))
+const libccluster = Ccluster_jll.libccluster
 function __init__()
 
 #    if "HOSTNAME" in keys(ENV) && ENV["HOSTNAME"] == "juliabox"
@@ -35,8 +35,8 @@ function __init__()
 #     println("")
 #     println("Welcome to Ccluster version 0.0.1")
 #     println("")
-      print("libccluster: $libccluster \n")
-      Libdl.dlopen(libccluster)
+#       print("libccluster: $libccluster \n")
+#       Libdl.dlopen(libccluster)
 end
 
 include("box.jl")
