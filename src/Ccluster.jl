@@ -36,6 +36,7 @@ function __init__()
 #     println("Welcome to Ccluster version 0.0.1")
 #     println("")
       print("libccluster: $libccluster \n")
+      Libdl.dlopen(libccluster)
 end
 
 include("box.jl")
