@@ -46,7 +46,7 @@ mutable struct connComp
     
     function connComp()
         z = new()
-        ccall( (:connCmp_init, :libccluster), 
+        ccall( (:connCmp_init, libccluster), 
              Nothing, (Ref{connComp},), 
                     z)
 #         finalizer(z, _connComp_clear_fn)
@@ -57,7 +57,7 @@ mutable struct connComp
 #     function connComp(b::box)
 #         push!(saveBoxForDebug, b)
 #         z = new()
-#         ccall( (:connCmp_init_compBox, :libccluster), 
+#         ccall( (:connCmp_init_compBox, libccluster), 
 #              Nothing, (Ref{connComp}, Ref{box}), 
 #                     &z,            &b)
 #         finalizer(z, _connComp_clear_fn)
@@ -67,13 +67,13 @@ mutable struct connComp
 end
 
 function _connComp_clear_fn(cc::connComp)
-    ccall( (:connCmp_clear, :libccluster), 
+    ccall( (:connCmp_clear, libccluster), 
          Nothing, (Ref{connComp},), 
                 cc)
 end
 
 function copy_Ptr( cc::Ref{connComp} )
-    res = ccall( (:connCmp_copy, :libccluster), 
+    res = ccall( (:connCmp_copy, libccluster), 
                   Ptr{connComp}, (Ref{connComp},), 
                         cc )
     return res
@@ -90,7 +90,7 @@ end
 function getComponentBox(cc::connComp, initialBox::box)
     
     res = box()
-    ccall( (:connCmp_componentBox, :libccluster), 
+    ccall( (:connCmp_componentBox, libccluster), 
              Nothing, (Ref{box}, Ref{connComp}, Ref{box}), 
                     res,      cc,           initialBox);
     return res
@@ -98,7 +98,7 @@ function getComponentBox(cc::connComp, initialBox::box)
 end
 
 function pop( cc::connComp )
-    res = ccall( (:connCmp_pop, :libccluster), 
+    res = ccall( (:connCmp_pop, libccluster), 
                   Ref{box}, (Ref{connComp},), 
                                  cc)                        
     resobj::box = unsafe_load(res)
@@ -106,14 +106,14 @@ function pop( cc::connComp )
 end
 
 function isEmpty(cc::connComp)
-    res = ccall( (:connCmp_is_empty, :libccluster), 
+    res = ccall( (:connCmp_is_empty, libccluster), 
                   Cint, (Ref{connComp},), 
                         cc )
     return Bool(res)
 end
 
 function setAppPr(cc::Ref{connComp}, nAppPr::Int)
-    res = ccall( (:connCmp_set_appPr, :libccluster),
+    res = ccall( (:connCmp_set_appPr, libccluster),
                  Nothing, (Ptr{connComp}, Cint),
                            cc,            nAppPr)
     return

@@ -30,7 +30,7 @@ mutable struct box
     
     function box()
         z = new()
-        ccall( (:compBox_init, :libccluster), 
+        ccall( (:compBox_init, libccluster), 
              Nothing, (Ref{box},), 
                     z)
         finalizer(_box_clear_fn, z)
@@ -40,10 +40,10 @@ mutable struct box
     function box(re::fmpq, im::fmpq, width::fmpq)
         z = new()
         
-        ccall( (:compBox_init, :libccluster), 
+        ccall( (:compBox_init, libccluster), 
              Nothing, (Ref{box},), 
                     z)
-        ccall( (:compBox_set_3realRat, :libccluster), 
+        ccall( (:compBox_set_3realRat, libccluster), 
              Nothing, (Ref{box}, Ref{fmpq}, Ref{fmpq}, Ref{fmpq}), 
                     z,        re,      im,       width)
         finalizer(_box_clear_fn, z)
@@ -53,10 +53,10 @@ mutable struct box
     function box(b::box)
         z = new()
         
-        ccall( (:compBox_init, :libccluster), 
+        ccall( (:compBox_init, libccluster), 
              Nothing, (Ref{box},), 
                     z)
-        ccall( (:compBox_set, :libccluster), 
+        ccall( (:compBox_set, libccluster), 
              Nothing, (Ref{box}, Ref{box}), 
                        z,        b)
         finalizer(_box_clear_fn, z)
@@ -78,14 +78,14 @@ mutable struct box
 end
 
 function _box_clear_fn(d::box)
-    ccall( (:compBox_clear, :libccluster), 
+    ccall( (:compBox_clear, libccluster), 
          Nothing, (Ref{box},), 
                 d)
 end
 
 function getCenterRe(d::box)
     res = fmpq(0,1)
-    ccall( (:compBox_get_centerRe, :libccluster), 
+    ccall( (:compBox_get_centerRe, libccluster), 
              Nothing, (Ref{fmpq}, Ref{box}), 
                     res,      d)
     return res
@@ -93,7 +93,7 @@ end
 
 function getCenterIm(d::box)
     res = fmpq(0,1)
-    ccall( (:compBox_get_centerIm, :libccluster), 
+    ccall( (:compBox_get_centerIm, libccluster), 
              Nothing, (Ref{fmpq}, Ref{box}), 
                     res,      d)
     return res
@@ -101,7 +101,7 @@ end
 
 function getWidth(d::box)
     res = fmpq(0,1)
-    ccall( (:compBox_get_bwidth, :libccluster), 
+    ccall( (:compBox_get_bwidth, libccluster), 
              Nothing, (Ref{fmpq}, Ref{box}), 
                     res,      d)
     return res

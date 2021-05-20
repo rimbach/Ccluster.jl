@@ -17,7 +17,7 @@ mutable struct listConnComp
     
     function listConnComp()
         z = new()
-        ccall( (:connCmp_list_init, :libccluster), 
+        ccall( (:connCmp_list_init, libccluster), 
              Nothing, (Ref{listConnComp},), 
                     z)
 #         finalizer(z, _listConnComp_clear_fn)
@@ -27,13 +27,13 @@ mutable struct listConnComp
 end
 
 function _listConnComp_clear_fn(lc::listConnComp)
-    ccall( (:connCmp_list_clear, :libccluster), 
+    ccall( (:connCmp_list_clear, libccluster), 
          Nothing, (Ref{listConnComp},), 
                 lc)
 end
 
 function isEmpty( lc::listConnComp )
-    res = ccall( (:connCmp_list_is_empty, :libccluster), 
+    res = ccall( (:connCmp_list_is_empty, libccluster), 
                   Cint, (Ref{listConnComp},), 
                         lc )
     return Bool(res)
@@ -44,7 +44,7 @@ function getSize(lc::listConnComp)
 end
 
 function pop( lc::listConnComp )
-    res = ccall( (:connCmp_list_pop, :libccluster), 
+    res = ccall( (:connCmp_list_pop, libccluster), 
                   Ptr{connComp}, (Ref{listConnComp},), 
                                  lc)
     resobj::connComp = unsafe_load(res)
@@ -52,7 +52,7 @@ function pop( lc::listConnComp )
 end
 
 function pop_obj_and_ptr( lc::listConnComp )
-    res = ccall( (:connCmp_list_pop, :libccluster), 
+    res = ccall( (:connCmp_list_pop, libccluster), 
                   Ptr{connComp}, (Ref{listConnComp},), 
                                  lc)                        
     resobj::connComp = unsafe_load(res)
@@ -61,13 +61,13 @@ end
 
 
 function push( lc::listConnComp, cc::connComp )
-    ccall( (:connCmp_list_push, :libccluster), 
+    ccall( (:connCmp_list_push, libccluster), 
              Nothing, (Ref{listConnComp}, Ref{connComp}), 
                     lc,               cc)
 end
 
 function push_ptr( lc::listConnComp, cc::Ptr{connComp} )
-    ccall( (:connCmp_list_push, :libccluster), 
+    ccall( (:connCmp_list_push, libccluster), 
              Nothing, (Ref{listConnComp}, Ref{connComp}), 
                     lc,               cc)
 end

@@ -19,7 +19,7 @@ mutable struct disk
     
     function disk()
         z = new()
-        ccall( (:compDsk_init, :libccluster), 
+        ccall( (:compDsk_init, libccluster), 
              Nothing, (Ref{disk},), 
                     z)
 #         finalizer(z, _disk_clear_fn)
@@ -30,10 +30,10 @@ mutable struct disk
     function disk(re::fmpq, im::fmpq, rad::fmpq)
         z = new()
         
-        ccall( (:compDsk_init, :libccluster), 
+        ccall( (:compDsk_init, libccluster), 
              Nothing, (Ref{disk},), 
                     z)
-        ccall( (:compDsk_set_3realRat, :libccluster), 
+        ccall( (:compDsk_set_3realRat, libccluster), 
              Nothing, (Ref{disk}, Ref{fmpq}, Ref{fmpq}, Ref{fmpq}), 
                     z,        re,       im,       rad)
 #         finalizer(z, _disk_clear_fn)
@@ -43,14 +43,14 @@ mutable struct disk
 end
 
 function _disk_clear_fn(d::disk)
-    ccall( (:compDsk_clear, :libccluster), 
+    ccall( (:compDsk_clear, libccluster), 
          Nothing, (Ref{disk},), 
                 d)
 end
 
 function getCenterRe(d::disk)
     res = fmpq(0,1)
-    ccall( (:compDsk_get_centerRe, :libccluster), 
+    ccall( (:compDsk_get_centerRe, libccluster), 
              Nothing, (Ref{fmpq}, Ref{disk}), 
                     res,      d)
     return res
@@ -58,7 +58,7 @@ end
 
 function getCenterIm(d::disk)
     res = fmpq(0,1)
-    ccall( (:compDsk_get_centerIm, :libccluster), 
+    ccall( (:compDsk_get_centerIm, libccluster), 
              Nothing, (Ref{fmpq}, Ref{disk}), 
                     res,      d)
     return res
@@ -66,7 +66,7 @@ end
 
 function getRadius(d::disk)
     res = fmpq(0,1)
-    ccall( (:compDsk_get_radius, :libccluster), 
+    ccall( (:compDsk_get_radius, libccluster), 
              Nothing, (Ref{fmpq}, Ref{disk}), 
                     res,      d)
     return res
@@ -74,14 +74,14 @@ end
 
 function inflateDisk(d::disk, ratio::fmpq)
     res = disk()
-    ccall( (:compDsk_inflate_realRat, :libccluster), 
+    ccall( (:compDsk_inflate_realRat, libccluster), 
              Nothing, (Ref{disk}, Ref{disk}, Ref{fmpq}), 
                     res,      d,        ratio)
     return res
 end
 
 function isSeparated(d::disk, qMainLoop::listConnComp, qResults::listConnComp, qAllResults::listConnComp, discardedCcs::listConnComp )
-    res = ccall( (:ccluster_compDsk_is_separated_DAC, :libccluster), 
+    res = ccall( (:ccluster_compDsk_is_separated_DAC, libccluster), 
                    Cint, (Ref{disk}, Ref{listConnComp}, Ref{listConnComp}, Ref{listConnComp}, Ref{listConnComp}), 
                           d,        qMainLoop,       qResults,           qAllResults,       discardedCcs)
     return Bool(res)
