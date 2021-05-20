@@ -7,8 +7,8 @@ coefficients are complex numbers.
 Ccluster.jl also provides a clustering function for triangular systems of polynomial
 equations.
 
-Ccluster.jl is only compatible with julia >= 1.6.0.
-
+The most recent release (0.3.0) is only com compatible with julia >= 1.6.0.
+For a 1.0 <= julia version < 1.6.0, see release 0.2.0 which is not intended to be maintained.
 The Branch compat-julia-v0.6 is compatible with julia 0.6, but is not intended to be maintained.
 
 ## Brief description
