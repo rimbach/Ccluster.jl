@@ -9,6 +9,8 @@ import Nemo: fmpq, fmpz, acb_poly, fmpq_poly, QQ, prec, parent,
 
 using Ccluster_jll
 
+using Arb_jll
+
 ###############################################################################
 #
 #   Set up environment / load libraries
