@@ -9,8 +9,6 @@ import Nemo: fmpq, fmpz, acb_poly, fmpq_poly, QQ, prec, parent,
 
 using Ccluster_jll
 
-import Ccluster_jll: libccluster
-
 ###############################################################################
 #
 #   Set up environment / load libraries
@@ -24,6 +22,7 @@ import Ccluster_jll: libccluster
 #const libccluster = joinpath(pkgdir, "local", "lib", "libccluster")
 #libccluster is now defined by Ccluster_jll
 
+const libccluster = Libdl.dlopen(expanduser("~/.julia/artifacts/7524922475b968e0b4750f25dfc030c1fc43d65e/lib/libccluster.so"))
 function __init__()
 
 #    if "HOSTNAME" in keys(ENV) && ENV["HOSTNAME"] == "juliabox"
