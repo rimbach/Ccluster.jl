@@ -358,7 +358,8 @@ end
 # approximation function
 function getAppFirst( dest::Ptr{acb_poly}, prec::Int )::Cvoid
     global TCLUSTER_POLS
-    ccall((:acb_poly_set_fmpq_poly, :libarb), 
+#     ccall((:acb_poly_set_fmpq_poly, :libarb), 
+    ccall((:compApp_poly_set_fmpq_poly, :libccluster), 
             Cvoid, (Ptr{acb_poly}, Ref{fmpq_poly}, Int), 
                    dest,           TCLUSTER_POLS[1][1],            prec)
 end
@@ -567,7 +568,8 @@ function getAppSys( dest::Ptr{acb_poly}, prec::Int )::Cvoid
     Ptemp = TCLUSTER_POLS[1][actualPol]
     
     if actualPol==1 #should never enter here
-        ccall((:acb_poly_set_fmpq_poly, :libarb), 
+#         ccall((:acb_poly_set_fmpq_poly, :libarb), 
+        ccall((:compApp_poly_set_fmpq_poly, :libccluster),
             Cvoid, (Ptr{acb_poly}, Ref{fmpq_poly}, Int), 
                    dest,           Ptemp,            prec)
     else
@@ -613,7 +615,8 @@ function getAppSys( dest::Ptr{acb_poly}, prec::Int )::Cvoid
         approx::Array{acb,1} = Ccluster.getApproximation(TCLUSTER_CFEV[1],prec)
         Ptemp2::acb_poly = Ccluster.getPolAtHorner(Ptemp,approx,prec)
         
-        ccall((:acb_poly_set, :libarb), 
+#         ccall((:acb_poly_set, :libarb), 
+        ccall((:compApp_poly_set, :libccluster), 
             Cvoid, (Ptr{acb_poly}, Ref{acb_poly}, Int), 
                    dest,          Ptemp2,         prec)
                    

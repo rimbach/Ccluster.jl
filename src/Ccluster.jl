@@ -54,13 +54,15 @@ include("rand_generator.jl")
 __init__()
    
 function ptr_set_acb_poly( dest::Ref{acb_poly}, src::acb_poly )
-    ccall((:acb_poly_set, libarb), Nothing,
+#     ccall((:acb_poly_set, libarb), Nothing,
+    ccall((:compApp_poly_set, libccluster), Nothing,
                 (Ref{acb_poly}, Ref{acb_poly}, Int), 
                  dest,         src,          prec(parent(src)))
 end
 
 function ptr_set_2fmpq_poly( dest::Ref{acb_poly}, re::fmpq_poly, im::fmpq_poly, prec::Int )
-    ccall((:acb_poly_set2_fmpq_poly, libarb), Nothing,
+#     ccall((:acb_poly_set2_fmpq_poly, libarb), Nothing,
+    ccall((:compApp_poly_set2_fmpq_poly, libccluster), Nothing,
                 (Ref{acb_poly}, Ref{fmpq_poly}, Ref{fmpq_poly}, Int), 
                  dest,         re,             im,        prec)
 end
