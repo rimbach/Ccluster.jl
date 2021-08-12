@@ -16,7 +16,7 @@ R, x = PolynomialRing(Nemo.QQ, "x")
 degr = 64 #degree
 
 
-function getApp( dest::Ptr{acb_poly}, prec::Int )
+function getApp( dest::Ref{acb_poly}, prec::Int )
     
     CC = ComplexField(prec)
     R2, y = PolynomialRing(CC, "y")
@@ -27,9 +27,9 @@ function getApp( dest::Ptr{acb_poly}, prec::Int )
         root = modu*Nemo.exppii(CC(argu))
         res = res * (y-root)
     end
-    ccall((:acb_poly_set, :libarb), Void,
-                (Ptr{acb_poly}, Ptr{acb_poly}, Int), 
-                 dest,         &res,          prec)
+    ccall((:acb_poly_set, :libarb), Nothing,
+                (Ref{acb_poly}, Ref{acb_poly}, Int), 
+                 dest,          res,          prec)
 
 end
 
