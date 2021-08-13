@@ -40,7 +40,8 @@ end
 # print("res: $(getApproximation(53))\n\n")
 # print("degree(res): $(degree( getApproximation(53) )) \n\n")
 
-include("../julia/ccluster.jl")
+# include("../julia/ccluster.jl")
+using Ccluster
 # bInit = box(Nemo.fmpq(0,1),Nemo.fmpq(0,1),Nemo.fmpq(10,1))
 bInit = [Nemo.fmpq(1,6),Nemo.fmpq(1,4),Nemo.fmpq(3,1)]
 
