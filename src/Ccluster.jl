@@ -9,8 +9,6 @@ import Nemo: fmpq, fmpz, acb_poly, fmpq_poly, QQ, prec, parent,
 
 using Ccluster_jll
 
-using Arb_jll
-
 ###############################################################################
 #
 #   Set up environment / load libraries
@@ -57,7 +55,7 @@ function ptr_set_acb_poly( dest::Ref{acb_poly}, src::acb_poly )
 #     ccall((:acb_poly_set, libarb), Nothing,
     ccall((:compApp_poly_set, libccluster), Nothing,
                 (Ref{acb_poly}, Ref{acb_poly}, Int), 
-                 dest,         src,          prec(parent(src)))
+                 dest,         src,          precision(parent(src)))
 end
 
 function ptr_set_2fmpq_poly( dest::Ref{acb_poly}, re::fmpq_poly, im::fmpq_poly, prec::Int )
@@ -67,6 +65,7 @@ function ptr_set_2fmpq_poly( dest::Ref{acb_poly}, re::fmpq_poly, im::fmpq_poly, 
                  dest,         re,             im,        prec)
 end
 
+# check the RELATIVE ACCURACY in bits
 function checkAccuracy( pol::acb_poly, prec::Int )
     
     for i=0:degree(pol)
@@ -78,6 +77,7 @@ function checkAccuracy( pol::acb_poly, prec::Int )
     
 end
 
+# returns the MINIMUM RELATIVE ACCURACY in bits
 function getAccuracy( pol::acb_poly )::Int
     res::Int = accuracy_bits( coeff(pol, 0) )
     for i=1:degree(pol)
@@ -97,10 +97,45 @@ function parseVerbosity( verbosity::String )::Int
     elseif verbosity=="stats"
         return 2
     elseif verbosity=="results"
-        return 3
+        return 1
     else
         return 0
     end
+end
+
+#print clusters
+function printClusters(out, clusters, prec::Int)
+    R::ArbField = RealField(prec)
+    C::AcbField = ComplexField(prec)
+    write(out, "-------------------------------------\n")
+    for index in 1:length(clusters)
+        mult = clusters[index][1]
+        B    = clusters[index][2]
+        if isa( clusters[index][2], Array{fmpq, 1})
+            if length(clusters[index][2])==3
+                B = Ccluster.disk( clusters[index][2][1], clusters[index][2][2], clusters[index][2][3] )
+            end
+            if length(clusters[index][2])==2
+                B = Ccluster.disk( clusters[index][2][1], fmpq(0,1), clusters[index][2][2] )
+            end
+        end
+        if isa( clusters[index][2], Ccluster.box)
+            B = Ccluster.disk( Ccluster.getCenterRe(B), Ccluster.getCenterIm(B), fmpq(3,4)*Ccluster.getWidth(B) )
+        end
+        
+        bRe::arb = ball(R(Ccluster.getCenterRe(B)), R(Ccluster.getRadius(B)))
+        bIm::arb = ball(R(Ccluster.getCenterIm(B)), R(Ccluster.getRadius(B)))
+        if isa( clusters[index][2], Array{fmpq, 1})
+            if length(clusters[index][2])==2
+                bIm = ball(R(0), R(0))
+            end
+        end
+        b::acb   = C(bRe, bIm)
+        s = @sprintf("*** cluster with sum of multiplicity %4d *** \n", mult); write(out,s);
+        write(out, "$(b)\n");
+    end
+    write(out, "-------------------------------------\n")
+    return
 end
 
 function ccluster( getApprox::Function, 
@@ -133,10 +168,6 @@ function ccluster( getApprox::Function,
     lccRes = listConnComp()
     verbose::Int = parseVerbosity(verbosity)
     eps = fmpq(1, fmpz(2)^precision)
-    
-#     ccall( (:ccluster_interface_forJulia, libccluster), 
-#              Nothing, (Ref{listConnComp}, Ptr{Cvoid},    Ref{box}, Ref{fmpq}, Int,   Int), 
-#                      lccRes,           getApp_c,    initBox,  eps,      strat, verbose )
                      
     ccall( (:ccluster_forJulia_func, libccluster), 
              Nothing, (Ref{listConnComp}, Ptr{Cvoid}, Ref{box}, Ref{fmpq}, Cstring,  Int, Int), 
@@ -148,6 +179,10 @@ function ccluster( getApprox::Function,
         tempCC = pop(lccRes)
         tempBO = getComponentBox(tempCC,initBox)
         push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    if verbosity=="results"
+        printClusters(stdout, queueResults, precision)
     end
     
     return queueResults                                 
@@ -176,6 +211,10 @@ function ccluster( getApprox::Function,
         tempBO = getComponentBox(tempCC,initBox)
         tempBO = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
         push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    if verbosity=="results"
+        printClusters(stdout, queueResults, precision)
     end
     
     return queueResults                                 
@@ -223,6 +262,10 @@ function ccluster( P_FMPQ::fmpq_poly,
         push!(queueResults, [getNbSols(tempCC),tempBO])
     end
     
+    if verbosity=="results"
+        printClusters(stdout, queueResults, precision)
+    end
+    
     return queueResults                                   
 end
 
@@ -249,6 +292,10 @@ function ccluster( P_FMPQ::fmpq_poly,
         tempBO = getComponentBox(tempCC,initBox)
         tempBO = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
         push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    if verbosity=="results"
+        printClusters(stdout, queueResults, precision)
     end
     
     return queueResults                                   
@@ -284,16 +331,24 @@ function risolate( P_FMPQ::fmpq_poly,
     verbose::Int = parseVerbosity(verbosity)
     eps = fmpq(1, fmpz(2)^precision)
     
-    ccall( (:risolate_global_forJulia_realRat_poly, libccluster), 
+#     ccall( (:risolate_global_forJulia_realRat_poly, libccluster), 
+#              Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Cstring, Int, Int), 
+#                        lccRes,            P_FMPQ,         initBox,  eps,       strategy, 1,  verbose )
+                    
+    ccall( (:risolate_forJulia_realRat_poly, libccluster), 
              Nothing, (Ref{listConnComp}, Ref{fmpq_poly}, Ref{box}, Ref{fmpq}, Cstring, Int, Int), 
                        lccRes,            P_FMPQ,         initBox,  eps,       strategy, 1,  verbose )
-                     
+                       
     queueResults = []
     
     while !isEmpty(lccRes)
         tempCC = pop(lccRes)
         tempBO = getComponentBox(tempCC,initBox)
         push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    if verbosity=="results"
+        printClusters(stdout, queueResults, precision)
     end
     
     return queueResults                                   
@@ -322,6 +377,10 @@ function risolate( P_FMPQ::fmpq_poly,
         tempBO = getComponentBox(tempCC,initBox)
         tempBO = [getCenterRe(tempBO),getWidth(tempBO)]
         push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    if verbosity=="results"
+        printClusters(stdout, queueResults, precision)
     end
     
     return queueResults                                   
@@ -371,6 +430,10 @@ function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly,
         push!(queueResults, [getNbSols(tempCC),tempBO])
     end
     
+    if verbosity=="results"
+        printClusters(stdout, queueResults, precision)
+    end
+    
     return queueResults                                   
 end
 
@@ -396,6 +459,10 @@ function ccluster( Preal_FMPQ::fmpq_poly, Pimag_FMPQ::fmpq_poly,
         tempBO = getComponentBox(tempCC,initBox)
         tempBO = [getCenterRe(tempBO),getCenterIm(tempBO),fmpq(3,4)*getWidth(tempBO)]
         push!(queueResults, [getNbSols(tempCC),tempBO])
+    end
+    
+    if verbosity=="results"
+        printClusters(stdout, queueResults, precision)
     end
     
     return queueResults                                   
@@ -658,6 +725,6 @@ function ccluster( getApprox::Function, initBox::box, eps::fmpq, strat::Int, ver
     
 end
 
-export ccluster, risolate
+export ccluster, risolate, printClusters
 
 end # module

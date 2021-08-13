@@ -1,20 +1,8 @@
-#
-#  Copyright (C) 2018 Remi Imbach
-#
-#  This file is part of Ccluster.
-#
-#  Ccluster is free software: you can redistribute it and/or modify it under
-#  the terms of the GNU Lesser General Public License (LGPL) as published
-#  by the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.  See <http://www.gnu.org/licenses/>.
-#
-
 using Nemo
 
 R, x = PolynomialRing(Nemo.QQ, "x")
 
-# t = [(x-0)]
-nbiter = 4
+nbIter = 3
 
 function iterate( table, n, CC )
     
@@ -33,31 +21,49 @@ function iterate( table, n, CC )
     end
 end
 
-function getAppClusters( dest::Ptr{acb_poly}, prec::Int )
+function getApproximation( dest::Ptr{acb_poly}, precision::Int )
 
-    CC = ComplexField(prec)
-    R2, y = PolynomialRing(CC, "y")
-    
-    table = [(y-0)]
-    for i=1:nbiter
-        iterate( table, i, CC )
+    function getAppClusters( it::Int, prec::Int  )::Nemo.acb_poly
+#         print("it: $(it)\n")
+        CC = ComplexField(prec)
+        R2, y = PolynomialRing(CC, "y")
+        table = [(y-0)]
+        for i=1:it
+            iterate( table, i, CC )
+        end
+        res = R2(1)
+        for i=1:length(table)
+            res = res*table[i]
+        end
+        return res
     end
+    precTemp::Int = 2*precision
+    poly = getAppClusters( nbIter, precTemp)
+#     print("poly: $(poly)\n")
+#     print("precision: $precision \n");
+#     for i=0:degree(poly)
+#         print("$i-th coeff, accuracy_bits: $(accuracy_bits( coeff(poly, i) )) \n");
+#     end
+#     
+#     while Ccluster.checkAccuracy( poly, precision ) == 0
+#             precTemp = 2*precTemp
+#             poly = getAppClusters( nbIter, precTemp)
+# #             print("poly: $(poly)\n")
+#             print("poly: $(poly)\n")
+#             print("precision: $precision \n");
+#             for i=0:degree(poly)
+#                 print("$i-th coeff, accuracy_bits: $(accuracy_bits( coeff(poly, i) )) \n");
+#             end
+#     end
     
-    res = R2(1)
-    for i=1:length(table)
-        res = res*table[i]
-    end
-    
-    ccall((:acb_poly_set, :libarb), Void,
-                (Ptr{acb_poly}, Ptr{acb_poly}, Int), 
-                 dest,         &res,          prec)
+    Ccluster.ptr_set_acb_poly(dest, poly)
 
 end
 
-include("../julia/ccluster.jl")
-bInit = [fmpq(0,1),fmpq(0,1),fmpq(3,1)]
+using Ccluster
 
-eps = fmpq(1,2000)
+Res = ccluster(getApproximation, 53, verbosity="silent")
 
-Res = Ccluster(getAppClusters, bInit, eps, 15, 2);
-plotCcluster(Res, bInit, false)
+using CclusterPlot #only if you have installed CclusterPlot.jl
+
+plotCcluster(Res) #use true instead of false to focus on clusters

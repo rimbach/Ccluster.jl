@@ -18,6 +18,9 @@ precision = 53
 # local tests
 bInitx = [fmpq(0,1),fmpq(0,1),fmpq(1,1)]
 nbSols, clusters, ellapsedTime = tcluster( [f,g], [bInitx], precision, verbosity = "silent" );
+print("time to solve the system: $ellapsedTime \n")
+print("number of clusters: $(length(clusters))\n")
+print("number of solutions: $(nbSols)\n")
 
 #global tests
 nbSols, clusters, ellapsedTime = tcluster( [f,g], precision, verbosity = "silent" );
