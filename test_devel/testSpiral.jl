@@ -1,56 +1,39 @@
-#
-#  Copyright (C) 2018 Remi Imbach
-#
-#  This file is part of Ccluster.
-#
-#  Ccluster is free software: you can redistribute it and/or modify it under
-#  the terms of the GNU Lesser General Public License (LGPL) as published
-#  by the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.  See <http://www.gnu.org/licenses/>.
-#
-
 using Nemo
+using Ccluster
 
-R, x = PolynomialRing(Nemo.QQ, "x")
+bInit = [fmpq(0,1),fmpq(0,1),fmpq(4,1)] #box centered in 0 + sqrt(-1)*0 with width 4
+precision = 53                          #get clusters of size 2^-53
 
-degr = 64 #degree
-
-
-function getApp( dest::Ref{acb_poly}, prec::Int )
+degr=64
+function getApproximation( dest::Ptr{acb_poly}, precision::Int )
     
-    CC = ComplexField(prec)
-    R2, y = PolynomialRing(CC, "y")
-    res = R2(1)
-    for k=1:degr
-        modu = fmpq(k,degr)
-        argu = fmpq(4*k,degr)
-        root = modu*Nemo.exppii(CC(argu))
-        res = res * (y-root)
+    function getAppSpiral( degree::Int, prec::Int )::Nemo.acb_poly
+        CC = ComplexField(prec)
+        R2, y = PolynomialRing(CC, "y")
+        res = R2(1)
+        for k=1:degree
+            modu = fmpq(k,degree)
+            argu = fmpq(4*k,degree)
+            root = modu*Nemo.exppii(CC(argu))
+            res = res * (y-root)
+        end
+        return res
     end
-    ccall((:acb_poly_set, :libarb), Nothing,
-                (Ref{acb_poly}, Ref{acb_poly}, Int), 
-                 dest,          res,          prec)
+    
+    precTemp::Int = 2*precision
+    poly = getAppSpiral( degr, precTemp)
+    
+    while Ccluster.checkAccuracy( poly, precision ) == 0
+            precTemp = 2*precTemp
+            poly = getAppSpiral(degr, precTemp)
+    end
+    
+    Ccluster.ptr_set_acb_poly(dest, poly)
 
 end
 
-# CCt = ComplexField(53)
-# R2t, y = PolynomialRing(CCt, "y")
-# p = R2t(1)
-# getApp(&p, 53)
-# print("res: $(getApproximation(53))\n\n")
-# print("degree(res): $(degree( getApproximation(53) )) \n\n")
+Res = ccluster(getApproximation, bInit, precision, verbosity="silent")
 
-# include("../julia/ccluster.jl")
-using Ccluster
-# bInit = box(Nemo.fmpq(0,1),Nemo.fmpq(0,1),Nemo.fmpq(10,1))
-bInit = [Nemo.fmpq(1,6),Nemo.fmpq(1,4),Nemo.fmpq(3,1)]
+using CclusterPlot #only if you have installed CclusterPlot.jl
 
-# withNewton, stopWhenCompact, useTstarOptimised, predictPrec, anticipate, countSols
-quo = fmpz(2)
-quo = quo^53
-print("quo: $quo\n")
-eps = Nemo.fmpq(1,quo)
-eps = fmpq(1,100)
-    
-Res = Ccluster(getApp, bInit, eps, 15, 1);
-plotCcluster(Res, bInit, false)
+plotCcluster(Res, bInit, focus=false) #use true instead of false to focus on clusters

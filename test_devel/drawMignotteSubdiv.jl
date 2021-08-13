@@ -30,7 +30,7 @@ using CclusterPlot #only if you have installed CclusterPlot.jl
 
 # Res = ccluster(getApproximation, bInit, precision, strat=23, verbosity="brief");
 
-res, dis = Ccluster.ccluster_draw( getApproximation, bInit, precision, strategy="V4", verbosity="silent")
+res, dis = Ccluster.ccluster_draw( getApproximation, bInit, precision, strategy="onlySubd", verbosity="silent")
 # 
 CclusterPlot.plotCcluster_subdiv( res, dis, bInit)
 

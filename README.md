@@ -13,7 +13,9 @@ The Branch compat-julia-v0.6 is compatible with julia 0.6, but is not intended t
 
 ## Brief description
 
-### Univariate solver
+### Univariate solvers
+
+#### Complex root clustering
 
 The main function provided by Ccluster.jl is **ccluster**.
 It takes as input
@@ -44,6 +46,15 @@ https://dl.acm.org/citation.cfm?id=2930939
 Please cite:
 https://link.springer.com/chapter/10.1007/978-3-319-96418-8_28
 if you use it in your research.
+
+#### Real root isolator
+In the case where *P* has integer or rational coefficients,
+one may want to find isolating intervals for its real roots.
+
+Ccluster.jl provides a real root isolator called **risolate**.
+
+The implemented algorithm is described here:
+https://arxiv.org/abs/2102.10821
 
 ### Solver for triangular systems
 
@@ -106,7 +117,7 @@ It is heavy both to install and to load.
 
 ## Usage: univariate solver
 
-### Simple example: clustering the roots of a Mignotte-like polynomial
+### Simple example: clustering the complex roots of a Mignotte-like polynomial
 See the file examples/mignotte.jl
 ```
 using Nemo
@@ -123,9 +134,10 @@ bInit = [fmpq(0,1),fmpq(0,1),fmpq(4,1)] #box centered in 0 + sqrt(-1)*0 with wid
 precision = 53                          #get clusters of size 2^-53
 
 Res = ccluster(P, bInit, precision, verbosity="silent");
-                                        #verbosity can take value "silent" (default value),
-                                        #                         "brief" (brief report),
-                                        #                         "results" (clusters are printed)
+#verbosity can take value "silent" (default value),
+#                         "brief" (brief report),
+#                         "results" (brief report and clusters are printed as complex balls 
+#                                    with precision bits mantissa )
 ```
 For computing all the roots of *P*, do:
 ```
@@ -146,6 +158,10 @@ each element of Res being an array which
 imaginary parts of its center and its radius)
 * first element is the sum of multiplicities of the roots in the disk.
 
+You can print the clusters with
+```
+printClusters(stdout, Res, precision)
+```
 If you care about geometry, so do we.
 If you have installed CclusterPlot.jl, you can plot the clusters with:
 ```
@@ -162,7 +178,31 @@ on clusters (when *true*) or not (when *false*).
 You can also add *markers=false* as an optional argument
 to avoid plotting approximations of the roots with markers.
 
-### Other example: clustering the roots of a polynomial whose coefficients are roots of polynomials
+### Real roots: isolating the roots of the same Mignotte polynomials
+```
+using Nemo
+R, x = PolynomialRing(QQ, "x")
+
+d=64
+a=14
+P = x^d - 2*((2^a)*x-1)^2 #mignotte polynomial
+
+using Ccluster
+
+bInit = [fmpq(0,1),fmpq(1,1)] #interval centered in 0 with width 1: [-1/2,1/2]
+eps = 2
+Res = risolate(P, bInit, eps); # each solution is isolated in an interval of radius less than 2^-eps
+```
+For computing all the real roots of *P*, do:
+```
+Res = risolate(P, eps);
+```
+You can print the clusters with
+```
+printClusters(stdout, Res, precision)
+```
+
+### Other example: clustering the complex roots of a polynomial whose coefficients are roots of polynomials
 See the file examples/coeffsBernoulli.jl
 #### Find the 64 roots of the Bernoulli polynomial of degree 64
 ```
