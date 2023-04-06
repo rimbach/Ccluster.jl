@@ -11,7 +11,7 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-AbstractAlgebra = "0.21.0"
-Ccluster_jll = "1.1.7"
-Nemo = "0.26.1"
+AbstractAlgebra = "0.21, 0.27"
+Ccluster_jll = "1.1.8"
+Nemo = "0.26.1, 0.32"
 julia = "1.6"
