@@ -66,10 +66,10 @@ mutable struct box
 #     function box(re::fmpq, im::fmpq, width::fmpq, nbSols::Int)
 #         z = new()
 #         
-#         ccall( (:compBox_init, :libccluster), 
+#         ccall( (:compBox_init, libccluster), 
 #              Nothing, (Ref{box},), 
 #                     &z)
-#         ccall( (:compBox_set_3realRat_int, :libccluster), 
+#         ccall( (:compBox_set_3realRat_int, libccluster), 
 #              Nothing, (Ref{box}, Ref{fmpq}, Ref{fmpq}, Ref{fmpq}, Int), 
 #                     &z,        &re,       &im,       &width,   nbSols)
 #         finalizer(z, _box_clear_fn)

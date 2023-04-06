@@ -51,8 +51,8 @@ function evalUniFMPQPol(P::fmpq_poly, b::acb, prec::Int)::acb
     CC::AcbField = ComplexField(prec)
     R::AcbPolyRing, dummy::acb_poly = PolynomialRing(CC, "dummy")
     res::acb_poly = R(0)
-#     ccall((:acb_poly_set_fmpq_poly, :libarb), 
-    ccall((:compApp_poly_set_fmpq_poly, :libccluster), 
+#     ccall((:acb_poly_set_fmpq_poly, libarb), 
+    ccall((:compApp_poly_set_fmpq_poly, libccluster), 
       Cvoid, (Ref{acb_poly}, Ref{fmpq_poly}, Int), 
               res,           P,             prec)
     return evaluate(res, CC(b))
@@ -77,8 +77,8 @@ end
 
 function evalPolAtHorner(P::fmpq_poly, b::Array{acb, 1}, prec::Int, field::AcbField, ring::AcbPolyRing)::acb
     poly::acb_poly = ring(0)
-#     ccall((:acb_poly_set_fmpq_poly, :libarb), 
-    ccall((:compApp_poly_set_fmpq_poly, :libccluster), 
+#     ccall((:acb_poly_set_fmpq_poly, libarb), 
+    ccall((:compApp_poly_set_fmpq_poly, libccluster), 
             Cvoid, (Ref{acb_poly}, Ref{fmpq_poly}, Int), 
                     poly,          P,              prec)
     return evaluate(poly, b[1])
@@ -91,8 +91,8 @@ function evalPolAtHorner(P::Generic.Poly{fmpq_poly},
     temp::acb_poly = ring(0)
     while deg>=0
     
-#         ccall((:acb_poly_set_fmpq_poly, :libarb), 
-        ccall((:compApp_poly_set_fmpq_poly, :libccluster), 
+#         ccall((:acb_poly_set_fmpq_poly, libarb), 
+        ccall((:compApp_poly_set_fmpq_poly, libccluster), 
                 Cvoid, (Ref{acb_poly}, Ref{fmpq_poly},      Int), 
                         temp,          coeff(P,deg), prec)
         
@@ -117,8 +117,8 @@ function evalPolAtHorner(P::Generic.Poly{Generic.Poly{fmpq_poly}},
     while deg>=0
         
         while deg2>=0
-#             ccall((:acb_poly_set_fmpq_poly, :libarb), 
-            ccall((:compApp_poly_set_fmpq_poly, :libccluster), 
+#             ccall((:acb_poly_set_fmpq_poly, libarb), 
+            ccall((:compApp_poly_set_fmpq_poly, libccluster), 
                     Cvoid, (Ref{acb_poly}, Ref{fmpq_poly},      Int), 
                            temp,           coeff(P2,deg2), prec)
             res2 = evaluate(temp, b[1]) + b[2]*res2
@@ -161,8 +161,8 @@ function evalPolAtHorner(P::Generic.Poly{Generic.Poly{Generic.Poly{fmpq_poly}}},
         while deg2>=0
             
             while deg3>=0
-#                 ccall((:acb_poly_set_fmpq_poly, :libarb), 
-                ccall((:compApp_poly_set_fmpq_poly, :libccluster), 
+#                 ccall((:acb_poly_set_fmpq_poly, libarb), 
+                ccall((:compApp_poly_set_fmpq_poly, libccluster), 
                         Cvoid, (Ref{acb_poly}, Ref{fmpq_poly},      Int), 
                                temp,           coeff(P3,deg3), prec)
                         res3 = evaluate(temp, b[1]) + b[2]*res3
@@ -279,7 +279,7 @@ end
 #     temp::acb_poly = R(0)
 #     for index=0:degree(P)
 #         
-#         ccall((:acb_poly_set_fmpq_poly, :libarb), 
+#         ccall((:acb_poly_set_fmpq_poly, libarb), 
 #                 Cvoid, (Ref{acb_poly}, Ref{fmpq_poly},      Int), 
 #                         temp,          coeff(P,index), prec)
 #                         
@@ -305,7 +305,7 @@ end
 #     temp::acb_poly = R(0)
 #     while deg>=0
 #         
-#         ccall((:acb_poly_set_fmpq_poly, :libarb), 
+#         ccall((:acb_poly_set_fmpq_poly, libarb), 
 #             Cvoid, (Ref{acb_poly}, Ref{fmpq_poly},      Int), 
 #                     temp,          coeff(P,deg), prec)
 #                     
@@ -333,7 +333,7 @@ end
 #         res2::acb = CC(0)
 #         temp2::acb_poly = R(0)
 #         while deg2>=0
-#             ccall((:acb_poly_set_fmpq_poly, :libarb), 
+#             ccall((:acb_poly_set_fmpq_poly, libarb), 
 #                     Cvoid, (Ref{acb_poly}, Ref{fmpq_poly},      Int), 
 #                            temp2,           coeff(P2,deg2), prec)
 #             res2 = evaluate(temp2, b[1]) + b[2]*res2
@@ -372,7 +372,7 @@ end
 #             
 #             while deg3>=0
 #                 
-#                 ccall((:acb_poly_set_fmpq_poly, :libarb), 
+#                 ccall((:acb_poly_set_fmpq_poly, libarb), 
 #                     Cvoid, (Ref{acb_poly}, Ref{fmpq_poly},      Int), 
 #                            temp3,           coeff(P3,deg3), prec)
 #                 res3 = evaluate(temp3, b[1]) + b[2]*res3
@@ -424,7 +424,7 @@ end
 #                 
 #                 while deg4>=0
 #                 
-#                     ccall((:acb_poly_set_fmpq_poly, :libarb), 
+#                     ccall((:acb_poly_set_fmpq_poly, libarb), 
 #                            Cvoid, (Ref{acb_poly}, Ref{fmpq_poly},      Int), 
 #                                    temp4,           coeff(P4,deg4), prec)
 #                            res4 = evaluate(temp4, b[1]) + b[2]*res4

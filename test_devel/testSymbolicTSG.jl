@@ -11,7 +11,7 @@ for k = 0:n
 end
 
 # function getAppBern( dest::Ptr{acb_poly}, prec::Int )
-#     ccall((:acb_poly_set_fmpq_poly, :libarb), Void,
+#     ccall((:acb_poly_set_fmpq_poly, libarb), Void,
 #                 (Ptr{acb_poly}, Ptr{fmpq_poly}, Int), dest, &P, prec)
 # end
 
