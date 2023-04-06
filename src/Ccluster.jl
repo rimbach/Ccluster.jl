@@ -658,9 +658,9 @@ PGLOBALCCLUSTERFMPQ = fmpq_poly(0);
 
 function getApp_FMPQ( dest::Ref{acb_poly}, prec::Int )
 # function getApp_FMPQ( dest::acb_poly, prec::Int )
-#     ccall((:acb_poly_set_fmpq_poly, :libarb), Nothing,
+#     ccall((:acb_poly_set_fmpq_poly, libarb), Nothing,
 #                 (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
-    ccall((:acb_poly_set_fmpq_poly, :libarb), Cvoid,
+    ccall((:acb_poly_set_fmpq_poly, libarb), Cvoid,
                 (Ref{acb_poly}, Ref{fmpq_poly}, Int), dest, PGLOBALCCLUSTERFMPQ, prec)
 end
 
