@@ -4,7 +4,7 @@ module Ccluster
 
 using Libdl
 
-import Nemo: fmpq, fmpz, acb_poly, fmpq_poly, QQ, prec, parent,
+import Nemo: fmpq, fmpz, acb_poly, fmpq_poly, QQ, parent,
              degree, coeff, accuracy_bits
 
 using Ccluster_jll
