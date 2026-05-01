@@ -187,7 +187,7 @@ end
 # Rx, x = PolynomialRing(QQ, "x")
 # P = x^2 - fmpq(2)
 # function getApproximation( dest::Ptr{acb_poly}, prec::Int )
-#     ccall((:acb_poly_set_fmpq_poly, :libarb), 
+#     ccall((:acb_poly_set_fmpq_poly, libarb), 
 #       Cvoid, (Ptr{acb_poly}, Ref{fmpq_poly}, Int), 
 #              dest,          P,            prec)
 # end
